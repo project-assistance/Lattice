@@ -1,52 +1,36 @@
 # Tidy2 Chrome Extension — Codebase Guide
 
-This document explains every file in `src/`, how they connect, and what to change to build your own functionality. Written for someone who understands React but is new to Chrome Extension Manifest V3.
+This document explains every file in `src/`, how they connect, and what to change to build new functionality. Written for someone who understands React but is new to Chrome Extension Manifest V3.
 
 ---
 
-## The Big Picture: How a Chrome Extension Works
+## The Big Picture
 
-A Chrome extension is not a single webpage. It is several isolated JavaScript environments that run simultaneously and communicate by passing messages. Each environment has different capabilities and different lifetimes.
+A Chrome extension is several isolated JavaScript environments that communicate by passing messages. They cannot share variables or imports — only JSON-serializable data via `chrome.runtime.sendMessage()`.
 
 ```
-┌──────────────────────────────────────────────────────────────────────────┐
-│  BROWSER                                                                  │
-│                                                                           │
-│  ┌─────────────────────┐  GET_TABS      ┌─────────────────────────────┐ │
-│  │  Popup              │───────────────►│  Service Worker             │ │
-│  │  (popup/)           │◄───────────────│  (background.ts)            │ │
-│  │                     │  tabs[]        │                             │ │
-│  │                     │  CLUSTER_TABS  │  RUN_EMBEDDINGS             │ │
-│  │                     │───────────────►│      │           ▲          │ │
-│  │                     │◄───────────────│      ▼           │          │ │
-│  │                     │  clusters[][]  │  ┌──────────────────────┐   │ │
-│  └─────────────────────┘               │  │  Offscreen Document  │   │ │
-│                                        │  │  (offscreen/)        │   │ │
-│  ┌─────────────────────┐               │  │  ML pipeline + clust │   │ │
-│  │  Side Panel         │               │  └──────────────────────┘   │ │
-│  │  (sidepanel/)       │               └─────────────────────────────┘ │
-│  └─────────────────────┘                                                 │
-│  ┌───────────────────────────────┐                                       │
-│  │  Web Page                     │                                       │
-│  │   └── Content Script          │                                       │
-│  │       (content/)              │                                       │
-│  └───────────────────────────────┘                                       │
-└──────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  BROWSER                                                                     │
+│                                                                              │
+│  ┌──────────────────────┐  GET_TABS / CLUSTER_TABS   ┌──────────────────┐  │
+│  │  Popup  (popup/)     │──────────────────────────►│  Service Worker  │  │
+│  │  Side Panel          │◄──────────────────────────│  (background.ts) │  │
+│  │  (sidepanel/)        │  clusters[][], labels[]   │                  │  │
+│  │                      │                           │  RUN_EMBEDDINGS  │  │
+│  │  GeminiGate          │                           │      │           │  │
+│  │  TabList             │                           │      ▼           │  │
+│  └──────────────────────┘                           │  ┌────────────┐  │  │
+│            │                                        │  │  Offscreen │  │  │
+│            │  chrome.storage.onChanged              │  │  Document  │  │  │
+│            │  (cache + job updates)                 │  │  ONNX +    │  │  │
+│            ▼                                        │  │  Gemini    │  │  │
+│  ┌──────────────────────────────────────────┐       │  └────────────┘  │  │
+│  │  chrome.storage.local                    │       └──────────────────┘  │
+│  │  clusterCache_${windowId}  ClusterCache  │                              │
+│  │  clusterJob_${windowId}    ClusterJob    │                              │
+│  └──────────────────────────────────────────┘                              │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
-
-**Key MV3 rule:** These environments **cannot share variables or imports**. They can only talk via `chrome.runtime.sendMessage()`. Think of them as separate processes.
-
----
-
-## The Build Toolchain
-
-### Vite + CRXJS (`@crxjs/vite-plugin`)
-
-CRXJS reads `manifest.config.ts` as the source of truth for entry points, automatically tells Vite to build every HTML file and script listed, injects HMR into content scripts, copies `public/` into `dist/`, and generates `dist/manifest.json`.
-
-### `vite-plugin-zip-pack`
-
-After build, zips `dist/` into `release/crx-tidy2-1.0.0.zip` for Chrome Web Store upload.
 
 ---
 
@@ -55,78 +39,52 @@ After build, zips `dist/` into `release/crx-tidy2-1.0.0.zip` for Chrome Web Stor
 ### [`manifest.config.ts`](manifest.config.ts)
 
 ```ts
-export default defineManifest({
-  manifest_version: 3,
-  permissions: [
-    'tabs',            // chrome.tabs.query(), tab.url, tab.title
-    'storage',         // chrome.storage.local / sync
-    'alarms',          // scheduled background tasks
-    'sidePanel',       // chrome.sidePanel API
-    'contentSettings', // per-site content settings
-    'offscreen',       // create hidden offscreen documents for ML inference
-  ],
-  background: {
-    service_worker: 'src/background/background.ts',
-    type: 'module',
-  },
-})
+permissions: [
+  'tabs',            // chrome.tabs.query(), tab.url, tab.title, tab.groupId
+  'storage',         // chrome.storage.local
+  'alarms',          // scheduled background tasks
+  'sidePanel',       // chrome.sidePanel.open()
+  'offscreen',       // chrome.offscreen.createDocument() for ML inference
+  'aiAssistant',     // Gemini Nano / Prompt API (window.LanguageModel)
+  'contentSettings',
+  'tabGroups',       // chrome.tabs.group(), chrome.tabGroups.update/query
+]
+options_page: 'src/settings/index.html'
 ```
 
-The `offscreen` permission is required to use `chrome.offscreen.createDocument()`.
-
-### [`vite.config.ts`](vite.config.ts)
-
-```ts
-export default defineConfig({
-  resolve: {
-    alias: { '@': `${path.resolve(__dirname, 'src')}` },
-  },
-  build: {
-    rollupOptions: {
-      input: {
-        offscreen: path.resolve(__dirname, 'src/offscreen/offscreen.html'),
-      },
-    },
-  },
-  plugins: [ react(), crx({ manifest }), zip(...) ],
-})
-```
-
-The `build.rollupOptions.input` entry registers `offscreen.html` as an additional build entry point. Without it, Vite would not bundle the offscreen document.
-
-### `public/`
-
-Everything in `public/` is copied to `dist/` as-is, making it accessible via `chrome.runtime.getURL(...)` at runtime.
-
-```
-public/
-  taxonomy.json        ← site taxonomy data, loaded at runtime by the background
-  ort/                 ← onnxruntime-web WASM files (copied from node_modules)
-    ort-wasm-simd-threaded.asyncify.mjs / .wasm
-    ort-wasm-simd-threaded.mjs / .wasm
-    ort-wasm-simd-threaded.jsep.mjs / .wasm
-```
-
-The `ort/` files exist because Chrome extension CSP blocks dynamic imports from external CDNs (`cdn.jsdelivr.net`). `@huggingface/transformers` fetches its WASM runtime from jsdelivr at runtime — pointing `env.backends.onnx.wasm.wasmPaths` to these local files bypasses that.
+`tabGroups` is required for creating, updating, and querying Chrome Tab Groups. `aiAssistant` enables the Prompt API (`LanguageModel`) for Gemini Nano cluster labeling.
 
 ---
 
 ## Types ([`src/types.ts`](src/types.ts))
 
 ```ts
-// Raw tab from Chrome
-export type Tab = { title: string; url: string }
+export type Tab = {
+  title: string; url: string
+  id: number; windowId: number; index: number
+  active: boolean; pinned: boolean; discarded: boolean
+  favIconUrl?: string
+}
 export type Tabs = Tab[]
 
-// Tab after taxonomy lookup — signal and category added by background before embedding
 export type EnrichedTab = Tab & {
-  signal: string | null    // e.g. "watching-video", "viewing-repo"
+  signal: string | null    // e.g. "viewing-repo", "watching-video"
   category: string | null  // e.g. "code", "shopping"
 }
 export type EnrichedTabs = EnrichedTab[]
+
+export type ClusterCache = {
+  clusters: Tab[][]   // parallel arrays — index i of clusters matches index i of labels
+  labels: string[]
+}
+
+export type ClusterJob = {
+  status: 'running' | 'done' | 'error'
+  error?: string
+}
 ```
 
-`Tab` is what Chrome returns. `EnrichedTab` is what gets sent to the offscreen document — the background adds `signal` and `category` from the taxonomy engine so the ML model gets richer semantic context.
+`ClusterCache` and `ClusterJob` are stored in `chrome.storage.local` keyed by `windowId`. They are the source of truth for restoring state when the popup re-opens.
 
 ---
 
@@ -136,91 +94,90 @@ export type EnrichedTabs = EnrichedTab[]
 
 **File:** [`src/background/background.ts`](src/background/background.ts)
 
-The service worker is Chrome's event broker for the extension. It has no DOM, no WebGPU, and cannot use dynamic `import()` (HTML spec restriction on `ServiceWorkerGlobalScope`). It owns three responsibilities: fetching tabs, loading the taxonomy, and delegating ML work to the offscreen document.
+The service worker is the event broker. It has no DOM and no WebGPU. Responsibilities: fetch tabs, load taxonomy, delegate ML work to the offscreen document, manage per-window storage, and handle tab lifecycle events.
 
 #### Message API
 
 | Action | Payload | Response |
 |---|---|---|
-| `GET_TABS` | — | `{ status, tabs: Tab[] }` |
-| `CLUSTER_TABS` | — | `{ status, clusters: EnrichedTab[][], vector: number[][] }` |
+| `GET_TABS` | `{ windowId }` | `{ status: 'success', tabs: Tab[] }` or `{ status: 'cache_success', tabs: Tab[][], labels: string[] }` |
+| `CLUSTER_TABS` | `{ windowId }` | `{ status, clusters: Tab[][], labels: string[], vector: number[][] }` |
+| `SET_ACTIVE_TAB` | `{ tabId }` | `{ status }` |
+| `CLOSE_TAB` | `{ tabId }` | `{ status }` |
+| `CREATE_TAB_GROUP` | `{ tabIds, title, colorIndex, windowId }` | `{ status, groupId }` |
+| `UNGROUP_TABS` | `{ tabIds }` | `{ status }` |
 | `LOAD_TAXONOMY` | — | `{ status, version, aliases }` |
 
-`GET_TABS` and `CLUSTER_TABS` are intentionally decoupled so the popup can show tabs immediately and trigger clustering separately based on user preference.
+Both `GET_TABS` and `CLUSTER_TABS` require `windowId` in the payload — the background cannot infer which window the popup belongs to from `sender` alone.
 
-#### Key patterns
+#### Per-window storage
 
-**Lazy taxonomy loading** — loaded once on first use, cached for the lifetime of the service worker:
+Every cached result is keyed by `windowId` so multiple windows maintain independent cluster state:
 
 ```ts
-let taxonomyPromise: Promise<TaxonomyEngine> | null = null;
-
-async function getTaxonomy() {
-    if (!taxonomyPromise) {
-        taxonomyPromise = fetch(chrome.runtime.getURL('taxonomy.json'))
-            .then(r => r.json())
-            .then(data => new TaxonomyEngine(data));
-    }
-    return taxonomyPromise;
-}
+const cacheKey = `clusterCache_${windowId}`  // ClusterCache
+const jobKey   = `clusterJob_${windowId}`    // ClusterJob
 ```
 
-**Tab enrichment** — background looks up each tab in the taxonomy before sending to the offscreen doc. `tabs` and `taxonomy` are fetched in parallel:
+**`GET_TABS` response logic:**
+1. Check `clusterCache_${windowId}` in local storage
+2. If found → return `cache_success` with the cached `clusters` and `labels`
+3. If not found → query Chrome tabs and return `success` with a flat `Tab[]`
+
+#### Job tracking
+
+`handleClusterTabs` writes job status to local storage so the popup can recover state if closed mid-run:
 
 ```ts
-const [tabs, taxonomy] = await Promise.all([getTabTitles(), getTaxonomy()]);
+// Start
+await chrome.storage.local.set({ [jobKey]: { status: 'running' } as ClusterJob })
 
-const enrichedTabs: EnrichedTabs = tabs.map(tab => ({
-    ...tab,
-    signal: taxonomy.lookup(tab.url)?.signal ?? null,
-    category: taxonomy.lookup(tab.url)?.category ?? null,
-}));
+// On success (inside RUN_EMBEDDINGS callback)
+chrome.storage.local.set({
+  [cacheKey]: { clusters, labels } as ClusterCache,
+  [jobKey]: { status: 'done' } as ClusterJob,
+})
+
+// On error
+chrome.storage.local.set({ [jobKey]: { status: 'error', error: message } as ClusterJob })
 ```
 
-**Concurrency-safe offscreen document creation** (Google-recommended pattern):
+`sendResponse` is wrapped in `try/catch` — the popup may have closed before the pipeline finishes.
+
+#### Tab event listeners (smart cache invalidation)
+
+Instead of clearing clusters when tabs change, the background performs surgical updates:
 
 ```ts
-let creating: Promise<void> | null = null;
+// New tab → add to Ungrouped bucket
+chrome.tabs.onCreated.addListener(async (tab) => { ... addToUngrouped(cache, tab) })
 
+// Tab navigated → move to Ungrouped with updated URL/title
+chrome.tabs.onUpdated.addListener(async (_, changeInfo, tab) => {
+  if (!changeInfo.url) return  // only act on navigations, not title/status changes
+  // remove from current cluster, add to Ungrouped
+})
+
+// Tab closed → remove from its cluster, drop empty clusters
+chrome.tabs.onRemoved.addListener(async (tabId, info) => { ... })
+```
+
+Changes are written to `clusterCache_${windowId}` which triggers `chrome.storage.onChanged` in any open popup/sidepanel, updating the UI live.
+
+#### Concurrency-safe offscreen document creation
+
+```ts
 async function ensureOffscreenDocument(): Promise<boolean> {
-    const existing = await chrome.runtime.getContexts({
-        contextTypes: [chrome.runtime.ContextType.OFFSCREEN_DOCUMENT],
-        documentUrls: [chrome.runtime.getURL(OFFSCREEN_PATH)],
-    });
-    if (existing.length > 0) return false;
-
-    if (creating) {
-        await creating;
-    } else {
-        creating = chrome.offscreen.createDocument({ url: OFFSCREEN_PATH, ... });
-        await creating;
-        creating = null;
-    }
-    return true;
+    const existing = await chrome.runtime.getContexts({ ... })
+    if (existing.length > 0) return false
+    if (creating) { await creating } else { creating = chrome.offscreen.createDocument(...) }
+    return true
 }
+const justCreated = await ensureOffscreenDocument()
+if (justCreated) await waitForOffscreenReady()
 ```
 
-**OFFSCREEN_READY signal** — `createDocument()` resolves when the HTML loads, but `<script type="module">` is deferred so the listener may not be registered yet. The background waits for a signal before sending work:
-
-```ts
-const justCreated = await ensureOffscreenDocument();
-if (justCreated) await waitForOffscreenReady(); // parks until OFFSCREEN_READY arrives
-chrome.runtime.sendMessage({ action: 'RUN_EMBEDDINGS', tabs: enrichedTabs });
-```
-
-**Message flow for clustering:**
-
-```
-Popup              Background                    Offscreen
-  │                    │                              │
-  │─ CLUSTER_TABS ────►│                              │
-  │                    │─ getTabTitles() + getTaxonomy() (parallel)
-  │                    │─ enrich tabs with signal/category
-  │                    │─ RUN_EMBEDDINGS (enrichedTabs) ─►│
-  │                    │                              │─ pipeline() + cluster()
-  │                    │◄─ { clusters, vector } ───────│
-  │◄─ { clusters } ────│                              │
-```
+`OFFSCREEN_READY` is sent from the offscreen module after `onMessage.addListener` — necessary because `<script type="module">` is deferred and `createDocument()` resolves before module scripts execute.
 
 ---
 
@@ -228,173 +185,252 @@ Popup              Background                    Offscreen
 
 **Files:** [`src/offscreen/offscreen.html`](src/offscreen/offscreen.html), [`src/offscreen/offscreen.ts`](src/offscreen/offscreen.ts)
 
-A hidden browser page owned by the extension. Unlike the service worker, it runs in a full renderer process with WebGPU and dynamic `import()`. This is where the ML pipeline runs.
+Hidden browser page with full renderer access (WebGPU, dynamic `import()`). Runs the entire ML pipeline.
 
 #### Embedding model
 
 ```ts
-const MODEL_ID = 'Xenova/all-MiniLM-L12-v2'; // 12-layer, 33MB, 384-dim output
+const MODEL_ID = 'Xenova/all-MiniLM-L12-v2'  // 12-layer, 33MB, 384-dim
 ```
 
-`all-MiniLM-L12-v2` (12 transformer layers) produces better cluster separation than the L6 variant (6 layers) for tab content. Each additional layer gives the model another pass to build more abstract representations — L12 distinguishes *intent* (browsing code vs. buying something) rather than just keyword overlap. The tradeoff is ~50% larger download (33MB vs 22MB) and slightly slower first inference, but both are one-time costs.
+L12 distinguishes intent (browsing code vs. buying something) rather than just keyword overlap. L6 is faster but produces weaker cluster separation.
 
-To swap models, change `MODEL_ID` here and update `MODEL_ID` in `embeddings.test.ts` to benchmark quality before committing.
+#### Cluster labeling — Gemini Nano first, KeyBERT fallback
 
-#### Pipeline
-
-Receives `EnrichedTabs` from the background. Passes `signal` and `category` through to `formatTabInput` so the embedding includes semantic context beyond just the URL and title.
+`generateLabels` tries Gemini Nano as primary and falls back to KeyBERT per cluster if it fails:
 
 ```ts
-const inputs = tabs.map(t => formatTabInput(t.url, t.title, t.signal, t.category));
-console.log('Embedding inputs:', inputs); // visible in offscreen devtools
-const output = await embedder(inputs, { pooling: 'mean', normalize: true });
-```
-
-**Why `OFFSCREEN_READY` is sent last** — the background waits for this signal before sending `RUN_EMBEDDINGS`. It must come after `onMessage.addListener`, otherwise the background could receive it and immediately send work before the listener is registered.
-
-**Inspecting the offscreen console:** `chrome://extensions/` → your extension → "Inspect" next to the offscreen document.
-
----
-
-### 3. Taxonomy Engine
-
-**Files:** [`src/lib/taxonomyEngine.ts`](src/lib/taxonomyEngine.ts), [`src/lib/taxonomy.types.ts`](src/lib/taxonomy.types.ts)
-
-Loads [`public/taxonomy.json`](public/taxonomy.json) — a hand-curated database of ~100 sites — and provides O(1) URL classification.
-
-#### `taxonomy.json` structure
-
-```jsonc
-{
-  "version": "2026-06-23",
-  "categories": ["code", "shopping", "video", ...],  // 19 categories
-  "sites": [
-    {
-      "id": "github",
-      "domains": ["github.com"],
-      "category": "code",
-      "tool": "github",
-      "multipurpose": true,
-      "possibleCategories": ["code", "documentation", "community"],
-      "paths": [
-        { "match": "^/([^/]+)/([^/]+)/?$", "extract": {"owner": 1, "repo": 2}, "signal": "viewing-repo" }
-      ]
+async function generateLabels(
+    clusters: EnrichedTab[][], clusterIndices: number[][],
+    embedder: any, tabs: EnrichedTabs, vectors: number[][]
+): Promise<string[]> {
+    let session: any = null
+    try {
+        session = await LanguageModel.create()   // Gemini Nano session
+    } catch {
+        // Gemini unavailable — use KeyBERT for all clusters
+        return Promise.all(clusterIndices.map(g => keyBERTLabel(g, embedder, tabs, vectors)))
     }
-  ],
-  "patterns": [
-    { "id": "docs-subdomain", "domainPattern": "^\\.docs?\\.", "category": "documentation", "signal": "documentation-site" }
-  ],
-  "aliases": { "youtu.be": "youtube.com", "amzn.to": "amazon.com" }
+
+    const labels: string[] = []
+    for (let i = 0; i < clusters.length; i++) {
+        try {
+            const tabList = clusters[i]
+                .map(t => `- "${t.title}" (${getDomain(t.url)})`).join('\n')
+            const response = await session.prompt(
+                `These browser tabs are open together:\n${tabList}\n\n` +
+                `Write a concise 2-4 word title describing what they have in common. ` +
+                `Reply with only the title, no punctuation or explanation.`
+            )
+            labels.push(response.trim())
+        } catch {
+            labels.push(await keyBERTLabel(clusterIndices[i], embedder, tabs, vectors))
+        }
+    }
+    session.destroy()
+    return labels
 }
 ```
 
-#### `TaxonomyEngine.lookup(url)` — resolution order
+#### Single-tab separation
 
+After clustering, single-tab clusters are pulled out and collected into a single **Ungrouped** bucket appended at the end:
+
+```ts
+const multiClusters = clusteredTabs.filter(c => c.length > 1)
+const singleTabs    = clusteredTabs.filter(c => c.length === 1).flat()
+// Only named multi-tab clusters get passed to generateLabels
+const finalClusters = singleTabs.length > 0 ? [...multiClusters, singleTabs] : multiClusters
+const finalLabels   = singleTabs.length > 0 ? [...multiLabels, 'Ungrouped'] : multiLabels
 ```
-1. Parse URL, strip www., resolve aliases (youtu.be → youtube.com)
-2. domainMap.get(hostname)       → exact site match
-      └── try each site's path rules for signal + extraction
-3. patterns[].regex.test(hostname) → wildcard pattern match (docs.*, *.myshopify.com)
-4. return null                   → unknown site
-```
-
-**Constructor pre-compiles everything** so `lookup()` pays no regex compilation cost at call time:
-- `domainMap: Map<string, TaxonomySite>` — flat domain → site index (one entry per domain alias)
-- `patterns: CompiledPattern[]` — `TaxonomyPattern & { regex: RegExp }`
-- `sitePaths: Map<string, CompiledSitePath[]>` — per-site path rules with compiled regexes
-
-#### Key types ([`src/lib/taxonomy.types.ts`](src/lib/taxonomy.types.ts))
-
-| Type | Description |
-|---|---|
-| `TaxonomyCategory` | Union of all 19 category strings |
-| `TaxonomySite` | One site entry from `sites[]` |
-| `SitePath` | A path rule: `match`, `signal?`, `extract?` |
-| `TaxonomyPattern` | A wildcard pattern: `domainPattern`, `category`, `signal` |
-| `TaxonomyData` | Shape of the full `taxonomy.json` file |
-| `LookupResult` | `{ site?, category, signal?, extracted? }` |
-
-**Tests:** [`src/lib/taxonomyEngine.test.ts`](src/lib/taxonomyEngine.test.ts) — 32 tests covering exact matches, path extraction, alias resolution, and pattern matching. All load from `public/taxonomy.json`.
 
 ---
 
-### 4. Clustering Library
+### 3. Popup & Side Panel
+
+**Files:** `src/popup/App.tsx`, `src/sidepanel/App.tsx`
+
+Both are nearly identical — the popup additionally has an "Open in side panel" button and calls `window.close()` on tab click.
+
+#### State
+
+```ts
+const [tabs, setTabs]               = useState<Tab[][]>([])
+const [labels, setLabels]           = useState<string[]>([])
+const [chromeGroups, setChromeGroups] = useState<ChromeGroupInfo[]>([])
+const [loading, setLoading]         = useState(true)
+const [clustering, setClustering]   = useState(false)
+const windowIdRef                   = useRef<number | null>(null)
+```
+
+#### Initialization (`useEffect`)
+
+```ts
+const init = async () => {
+  const win = await chrome.windows.getCurrent()
+  windowIdRef.current = win.id!
+
+  const [jobResult, response] = await Promise.all([
+    chrome.storage.local.get(`clusterJob_${wid}`),
+    chrome.runtime.sendMessage({ action: 'GET_TABS', windowId: wid }),
+  ])
+
+  // Restore in-progress clustering indicator if popup was closed mid-run
+  if (jobResult[`clusterJob_${wid}`]?.status === 'running') setClustering(true)
+
+  // Restore cached clusters or show fresh flat tab list
+  if (response.status === 'cache_success') { setTabs(response.tabs); setLabels(response.labels) }
+  else if (response.status === 'success')  { setTabs([response.tabs]) }
+
+  setChromeGroups(await computeGroupInfo(clusters, wid))
+}
+```
+
+#### Reactive storage listener
+
+`chrome.storage.onChanged` drives all live updates — both clustering completion and tab events (create/navigate/close):
+
+```ts
+const handleStorageChange = async (changes, area) => {
+  const cacheChange = changes[`clusterCache_${wid}`]
+  if (cacheChange?.newValue) {
+    // Tab event or clustering completed — update UI immediately
+    const cache = cacheChange.newValue as ClusterCache
+    setTabs(cache.clusters)
+    setLabels(cache.labels ?? [])
+    setChromeGroups(await computeGroupInfo(cache.clusters, wid))
+  }
+  const jobChange = changes[`clusterJob_${wid}`]
+  if (jobChange?.newValue?.status === 'done' || 'error') setClustering(false)
+}
+chrome.storage.onChanged.addListener(handleStorageChange)
+```
+
+#### Chrome Tab Groups
+
+`computeGroupInfo` queries Chrome directly to check if each cluster already has a native tab group:
+
+```ts
+async function computeGroupInfo(clusters: Tab[][], windowId: number): Promise<ChromeGroupInfo[]> {
+  const [chromeTabs, chromeGroups] = await Promise.all([
+    chrome.tabs.query({ windowId }),
+    chrome.tabGroups.query({ windowId }),
+  ])
+  // Returns { groupId, color } for clusters where all tabs share one groupId, null otherwise
+}
+```
+
+Called after mount, after clustering, and after any group/ungroup action.
+
+---
+
+### 4. Shared Components
+
+#### [`src/components/GeminiGate.tsx`](src/components/GeminiGate.tsx)
+
+Gates both popup and side panel behind Gemini Nano availability. Wraps the app content as `children` and renders a blocking screen until the model is ready.
+
+```
+Status states:
+  'checking'       → calls LanguageModel.availability() on mount
+  'available'      → renders children (normal app)
+  'needs-download' → shows download prompt + link to Chrome AI docs
+  'downloading'    → shows progress bar (e.loaded * 100 = percentage)
+  'incompatible'   → LanguageModel global absent or availability() === 'unavailable'
+```
+
+The `className` prop (e.g. `"popup"` or `"panel"`) is applied to the gate wrapper so layout constraints are preserved in all states.
+
+If `availability()` returns `'downloading'` (download already in progress), the gate auto-calls `LanguageModel.create()` with a monitor to attach progress tracking.
+
+#### [`src/components/TabList.tsx`](src/components/TabList.tsx)
+
+Shared between popup and side panel. Renders `Tab[][]` as either a plain list (single group) or color-tinted cards with headers (multiple groups).
+
+```ts
+interface TabListProps {
+  tabs: Tab[][]
+  labels?: string[]
+  chromeGroups?: ChromeGroupInfo[]   // parallel array — null means no Chrome group for that cluster
+  loading: boolean
+  onTabClick: (tab: Tab) => void
+  onTabClose: (tab: Tab) => void
+  onGroupCluster?: (tabs: Tab[], label: string, index: number) => void
+  onUngroupCluster?: (tabs: Tab[], groupId: number) => void
+}
+
+export type ChromeGroupInfo = { groupId: number; color: string } | null
+```
+
+**Card coloring** — when a `ChromeGroupInfo` entry exists for a cluster, the card background and border are tinted with the Chrome group's color (8-digit hex alpha):
+```ts
+style={{ backgroundColor: dotColor + '12', borderColor: dotColor + '40' }}
+```
+
+**Cluster header** — shows the AI-generated label, an optional colored dot for existing Chrome groups, and a "Group"/"Ungroup" button. The Ungrouped bucket never shows a Group button.
+
+**Close button** — appears on tab item hover, calls `onTabClose` with `e.stopPropagation()` to prevent also triggering `onTabClick`.
+
+---
+
+### 5. Taxonomy Engine
+
+**Files:** [`src/lib/taxonomyEngine.ts`](src/lib/taxonomyEngine.ts), [`src/lib/taxonomy.types.ts`](src/lib/taxonomy.types.ts)
+
+Unchanged from original design. Loads `public/taxonomy.json` (~100 sites) and provides O(1) URL classification used to enrich tabs before embedding.
+
+---
+
+### 6. Clustering Library
 
 **File:** [`src/lib/clustering.ts`](src/lib/clustering.ts)
 
-Pure functions with no Chrome API or browser dependencies. Safe to import in Node.js (tests) and the offscreen document alike.
+Pure functions — no Chrome APIs or browser dependencies. Used by the offscreen document and tests.
 
 | Export | Description |
 |---|---|
-| `THRESHOLD` | Default cosine distance threshold (`0.8`) |
-| `cosineSimilarity(a, b)` | Dot product of two normalized unit vectors |
-| `cosineDistance(a, b)` | `1 - cosineSimilarity` |
-| `pairwiseDistances(embeddings)` | n×n distance matrix (Float32Array rows) |
-| `clusterAverageDistance(A, B, distances)` | Average linkage between two clusters |
-| `agglomerativeCluster(embeddings, threshold?)` | Bottom-up clustering → `number[][]` |
-| `formatTabInput(url, title, signal?, category?)` | Formats tab into embedding string |
-| `mapClustersToItems(items, clusters)` | Maps index clusters back to items: `T[][]` |
-
-**`formatTabInput` output** — combines all available context into a single string the model embeds:
-```
-"github.com /microsoft/typescript TypeScript viewing-repo code"
- ──────────  ─────────────────────  ──────────  ────────────  ────
-  domain           path              title        signal      category
-```
-`signal` and `category` are optional — tabs that don't match the taxonomy still embed using domain + path + title.
-
-**Clustering algorithm:** Agglomerative hierarchical with average linkage. Starts with every tab in its own cluster, repeatedly merges the two closest clusters until no pair is within `THRESHOLD` (cosine distance).
-
-**Tests:** [`src/lib/clustering.test.ts`](src/lib/clustering.test.ts) — 29 pure unit tests covering all functions including `mapClustersToItems` and enriched `formatTabInput` (with signal/category). [`src/lib/embeddings.test.ts`](src/lib/embeddings.test.ts) — 7 embedding quality and clustering tests using `onnxruntime-node` with `device: 'cpu'`.
-
-Tab fixtures in `embeddings.test.ts` include `signal` and `category` to match the production enriched format:
-
-```ts
-const DEV_TABS = [
-    { url: '...github.com/...', title: '...', signal: 'viewing-repo', category: 'code' },
-    { url: '...stackoverflow...', title: '...', signal: 'viewing-question', category: 'documentation' },
-    { url: '...mozilla.org/...', title: '...', signal: null, category: 'documentation' },
-];
-const toInput = (t) => formatTabInput(t.url, t.title, t.signal, t.category);
-```
-
-Tests use `onnx-community/all-MiniLM-L6-v2-ONNX` (not L12) — the tests were calibrated against L6's distance distribution. If you switch the production model, benchmark with a dedicated test run rather than updating `MODEL_ID` in this file permanently.
+| `agglomerativeCluster(embeddings, threshold?)` | Bottom-up clustering → `number[][]` of tab index groups |
+| `formatTabInput(url, title, signal?, category?)` | Formats enriched tab into embedding string |
+| `mapClustersToItems(items, clusters)` | Maps index clusters → `T[][]` |
+| `extractCandidates(tabs)` | KeyBERT: extract candidate keywords from tab titles |
+| `computeCentroid(vectors)` | Mean of a set of embedding vectors |
+| `topKeywords(candidates, cvectors, centroid, k)` | KeyBERT: top-k words by cosine similarity to cluster centroid |
 
 ---
 
-### 5. Popup
+### 7. Settings Page
 
-**Files:** `src/popup/`
+**Files:** `src/settings/`
 
-The popup drives both decoupled actions:
-
-```tsx
-// Step 1 — fast, show tabs immediately
-chrome.runtime.sendMessage({ action: 'GET_TABS' })
-// → { status, tabs: Tab[] }
-
-// Step 2 — user-triggered, runs ML pipeline
-chrome.runtime.sendMessage({ action: 'CLUSTER_TABS' })
-// → { status, clusters: EnrichedTab[][], vector: number[][] }
-```
-
-`CLUSTER_TABS` carries no payload — the background fetches fresh tabs itself so the clustering always reflects the current state of the window, not a snapshot from when `GET_TABS` was called.
+Registered as `options_page` in the manifest. Opens via `chrome.runtime.openOptionsPage()` from the popup/sidepanel settings icon. Currently a placeholder for cluster threshold configuration.
 
 ---
 
-### 6. Side Panel
+## Storage Architecture
 
-**Files:** `src/sidepanel/`
+All persistent state lives in `chrome.storage.local` (survives browser restarts and system sleep).
 
-Same structure as the popup. Persistent panel on the right side of the browser window. Currently contains placeholder UI.
+| Key pattern | Type | Written by | Read by |
+|---|---|---|---|
+| `clusterCache_${windowId}` | `ClusterCache` | background (clustering + tab events) | background (GET_TABS), popup/sidepanel (onChanged) |
+| `clusterJob_${windowId}` | `ClusterJob` | background | popup/sidepanel (init + onChanged) |
+
+**Cache invalidation:** Tab events trigger surgical cache updates rather than full clears. New/navigated tabs move to Ungrouped; removed tabs are deleted from their cluster; empty clusters are dropped. This preserves the user's groups while keeping the UI accurate.
 
 ---
 
-### 7. Content Script
+## Permissions Reference
 
-**Files:** `src/content/`
-
-Injected into every HTTPS page. Mounts a floating React overlay. CSS is not isolated from the page — use Shadow DOM if conflicts arise.
+| Permission | What it unlocks |
+|---|---|
+| `tabs` | `chrome.tabs.query/update/remove/group/ungroup`, `tab.url/title/groupId` |
+| `storage` | `chrome.storage.local` (persistent), `chrome.storage.onChanged` |
+| `sidePanel` | `chrome.sidePanel.open()` |
+| `offscreen` | `chrome.offscreen.createDocument()` for hidden ONNX/WebGPU pages |
+| `aiAssistant` | `LanguageModel` global (Gemini Nano / Chrome Prompt API) |
+| `tabGroups` | `chrome.tabs.group()`, `chrome.tabGroups.update/query` |
+| `alarms` | `chrome.alarms.*` |
+| `contentSettings` | Per-site content settings |
 
 ---
 
@@ -405,34 +441,27 @@ manifest.config.ts
       │
       ▼
 CRXJS Vite Plugin
-      ├─► src/popup/index.html → App.tsx
-      ├─► src/sidepanel/index.html → App.tsx
+      ├─► src/popup/index.html
+      │         └── App.tsx → GeminiGate → TabList
+      ├─► src/sidepanel/index.html
+      │         └── App.tsx → GeminiGate → TabList
+      ├─► src/settings/index.html → App.tsx
       ├─► src/content/main.tsx
       └─► src/background/background.ts
-                ├── @/lib/taxonomyEngine.ts → @/lib/taxonomy.types.ts
+                ├── @/lib/taxonomyEngine.ts
                 └── @/types.ts
 
 vite.config.ts (rollupOptions.input)
-      └─► src/offscreen/offscreen.html → offscreen.ts
-                ├── @/lib/clustering.ts
-                └── @/types.ts
+      └─► src/offscreen/offscreen.html
+                └── offscreen.ts
+                      ├── @/lib/clustering.ts  (ONNX embeddings + agglomerative cluster)
+                      ├── @huggingface/transformers (pipeline)
+                      └── LanguageModel (Gemini Nano, browser global)
 
-public/taxonomy.json   ← fetched at runtime by background.ts
-public/ort/            ← fetched at runtime by offscreen.ts (WASM)
+public/
+  taxonomy.json   ← fetched at runtime by background.ts
+  ort/            ← onnxruntime-web WASM (bypasses CDN CSP restriction)
 ```
-
----
-
-## Permissions Reference
-
-| Permission | What it unlocks |
-|---|---|
-| `tabs` | `chrome.tabs.query()`, `tab.url`, `tab.title` |
-| `storage` | `chrome.storage.local` / `chrome.storage.sync` |
-| `alarms` | `chrome.alarms.*` for scheduled background tasks |
-| `sidePanel` | `chrome.sidePanel.*` API |
-| `contentSettings` | Per-site content settings |
-| `offscreen` | `chrome.offscreen.createDocument()` for hidden browser pages |
 
 ---
 
@@ -441,32 +470,37 @@ public/ort/            ← fetched at runtime by offscreen.ts (WASM)
 ```bash
 npm run dev        # Vite dev server + CRXJS HMR
 npm test           # Run all tests once
-npm run test:watch # Rerun tests on file change
+npm run test:watch # Rerun on file change
 npm run build      # TypeScript check + production build → dist/
 ```
 
-1. Run `npm run dev`
-2. Go to `chrome://extensions/`, enable Developer Mode
-3. Click "Load unpacked" → select `dist/`
-4. Popup and sidepanel hot-reload automatically
-5. Content script hot-reloads via CRXJS
-6. `background.ts` changes require clicking refresh on `chrome://extensions/`
-7. Offscreen document console: `chrome://extensions/` → your extension → "Inspect" on the offscreen document
+1. `npm run dev` → load `dist/` as unpacked extension in `chrome://extensions/`
+2. Popup and sidepanel hot-reload automatically
+3. `background.ts` changes require clicking refresh on `chrome://extensions/`
+4. Offscreen console: `chrome://extensions/` → your extension → "Inspect" on the offscreen document
 
 ---
 
 ## Common Gotchas
 
-**No dynamic `import()` in service workers.** `@huggingface/transformers` uses dynamic imports internally — running `pipeline()` in `background.ts` will always fail. Use the offscreen document.
+**No dynamic `import()` in service workers.** `@huggingface/transformers` uses dynamic imports — `pipeline()` must run in the offscreen document, never in `background.ts`.
 
-**`createDocument()` resolves before module scripts run.** `<script type="module">` is deferred. The `OFFSCREEN_READY` signal pattern handles this — always send it after `onMessage.addListener`.
+**`createDocument()` resolves before module scripts run.** Always send `OFFSCREEN_READY` after `onMessage.addListener` in the offscreen module, and always `await waitForOffscreenReady()` in the background before sending `RUN_EMBEDDINGS`.
 
-**Extension CSP blocks CDN imports.** `onnxruntime-web` fetches its WASM runtime from jsdelivr. Copy the WASM files to `public/ort/` and set `env.backends.onnx.wasm.wasmPaths`.
+**Extension CSP blocks CDN imports.** Copy onnxruntime-web WASM files to `public/ort/` and set `env.backends.onnx.wasm.wasmPaths = chrome.runtime.getURL('/ort/')`.
 
-**`return true` in message listeners.** Always return `true` from `onMessage.addListener` if `sendResponse` is called asynchronously. Forgetting this closes the channel and the response silently becomes `undefined`.
+**`return true` in message listeners.** Always return `true` from `onMessage.addListener` when `sendResponse` is called asynchronously — forgetting this closes the channel and the response silently becomes `undefined`.
 
-**Service worker state resets.** Chrome kills the background service worker after ~30s of inactivity. `offscreenReady`, `taxonomyPromise`, and `creating` all reset on restart. The offscreen document typically outlives a single service worker invocation — the `existing.length > 0` check handles re-attaching without re-waiting for `OFFSCREEN_READY`.
+**`sendResponse` throws if the sender context closes.** Wrap all `sendResponse` calls in `try/catch` in `handleClusterTabs` — the popup may close before the ML pipeline finishes.
 
-**Don't pass class instances through `sendMessage`.** The structured clone algorithm strips methods and serializes `Map`/`Set`/`RegExp` as empty objects. Pass plain JSON-serializable data. The background enriches tabs with `signal`/`category` (plain strings) before sending — the offscreen doc never needs to know about `TaxonomyEngine`.
+**`chrome.storage.session` clears on macOS sleep.** Use `chrome.storage.local` for anything that should survive system sleep. `storage.session` only survives until Chrome closes.
 
-**`@/` alias** maps to `src/`. Must be configured in both `tsconfig.app.json` (paths) and `vite.config.ts` (alias).
+**`chrome.storage.get(key)` wraps the result.** `get('clusterCache_1')` returns `{ clusterCache_1: ... }` not the value directly — always unwrap: `result['clusterCache_1']`.
+
+**`LanguageModel.availability()` not `capabilities()`.** The Prompt API uses `availability()` returning `'available' | 'downloadable' | 'downloading' | 'unavailable'`. The older `capabilities()` / `window.ai.languageModel` API is deprecated.
+
+**`e.loaded` in `downloadprogress` is a decimal (0–1).** Multiply by 100 for percentage — there is no `e.total` property.
+
+**Don't pass class instances through `sendMessage`.** The structured clone algorithm strips methods. Pass plain JSON — `TaxonomyEngine` stays in the background and the offscreen only receives plain `EnrichedTab[]`.
+
+**`@/` alias** maps to `src/`. Must be configured in both `tsconfig.app.json` (paths) and `vite.config.ts` (resolve.alias).
