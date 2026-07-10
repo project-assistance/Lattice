@@ -131,6 +131,18 @@ describe('TaxonomyEngine', () => {
       expect(result?.signal).toBe('editing-spreadsheet');
     });
 
+    it('detects a Stack Overflow question page', () => {
+      const result = engine.lookup('https://stackoverflow.com/questions/123/how-does-async-await-work');
+      expect(result?.site?.id).toBe('stackoverflow');
+      expect(result?.signal).toBe('viewing-question');
+    });
+
+    it('detects a GitHub code search', () => {
+      const result = engine.lookup('https://github.com/search?q=vitest&type=code');
+      expect(result?.site?.id).toBe('github');
+      expect(result?.signal).toBe('code-search');
+    });
+
     it('returns the site with no signal when no path rule matches', () => {
       const result = engine.lookup('https://github.com/explore');
       expect(result?.site?.id).toBe('github');

@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import type { EnrichedTab } from '@/types';
 import {
     cosineSimilarity,
     cosineDistance,
@@ -7,6 +8,9 @@ import {
     agglomerativeCluster,
     formatTabInput,
     mapClustersToItems,
+    extractCandidates,
+    computeCentroid,
+    topKeywords,
 } from './clustering';
 
 describe('cosineSimilarity', () => {
@@ -72,6 +76,11 @@ describe('clusterAverageDistance', () => {
 });
 
 describe('agglomerativeCluster', () => {
+    it('handles a single embedding — returns one cluster containing that index', () => {
+        const result = agglomerativeCluster([[1, 0, 0]]);
+        expect(result).toEqual([[0]]);
+    });
+
     it('merges close embeddings into one cluster', () => {
         // Two nearly identical vectors, one far away
         const embeddings = [
@@ -203,5 +212,113 @@ describe('mapClustersToItems', () => {
         const clusters = [[3, 0, 2], [1]];
         const result = mapClustersToItems(items, clusters);
         expect(result[0]).toEqual(['d', 'a', 'c']);
+    });
+});
+
+function makeTab(title: string, signal: string | null = null, category: string | null = null): EnrichedTab {
+    return { title, url: 'https://example.com', id: 0, windowId: 0, index: 0, active: false, pinned: false, discarded: false, signal, category };
+}
+
+describe('extractCandidates', () => {
+    it('extracts meaningful words from tab titles', () => {
+        const result = extractCandidates([makeTab('TypeScript Generics')]);
+        expect(result).toContain('typescript');
+        expect(result).toContain('generics');
+    });
+
+    it('filters stop words', () => {
+        const result = extractCandidates([makeTab('How to use React hooks')]);
+        expect(result).not.toContain('how');
+        expect(result).not.toContain('to');
+        expect(result).not.toContain('use');
+        expect(result).toContain('react');
+        expect(result).toContain('hooks');
+    });
+
+    it('filters tokens shorter than 3 characters', () => {
+        const result = extractCandidates([makeTab('JS vs TS performance')]);
+        expect(result).not.toContain('js');
+        expect(result).not.toContain('ts');
+        expect(result).toContain('performance');
+    });
+
+    it('filters pure numeric tokens', () => {
+        const result = extractCandidates([makeTab('Array index 123 example')]);
+        expect(result).not.toContain('123');
+        expect(result).toContain('array');
+        expect(result).toContain('index');
+        expect(result).toContain('example');
+    });
+
+    it('deduplicates candidates across multiple tabs', () => {
+        const tabs = [makeTab('React tutorial'), makeTab('React hooks guide')];
+        const result = extractCandidates(tabs);
+        expect(result.filter(w => w === 'react').length).toBe(1);
+    });
+
+    it('splits hyphenated signal and adds non-stop words', () => {
+        const result = extractCandidates([makeTab('GitHub', 'viewing-repo')]);
+        expect(result).toContain('viewing');
+        expect(result).toContain('repo');
+    });
+
+    it('includes category as a candidate', () => {
+        const result = extractCandidates([makeTab('Laptop deals', null, 'shopping')]);
+        expect(result).toContain('shopping');
+    });
+
+    it('does not emit the string "null" when signal and category are null', () => {
+        const result = extractCandidates([makeTab('Clean title', null, null)]);
+        expect(result).not.toContain('null');
+    });
+});
+
+describe('computeCentroid', () => {
+    it('computes the element-wise mean of multiple vectors', () => {
+        const centroid = computeCentroid([[1, 0], [0, 1], [1, 1]]);
+        expect(centroid[0]).toBeCloseTo(2 / 3);
+        expect(centroid[1]).toBeCloseTo(2 / 3);
+    });
+
+    it('returns a copy of the single vector when given one input', () => {
+        const centroid = computeCentroid([[0.5, 0.3, 0.9]]);
+        expect(centroid).toEqual([0.5, 0.3, 0.9]);
+    });
+});
+
+describe('topKeywords', () => {
+    it('returns an empty array when candidates list is empty', () => {
+        expect(topKeywords([], [], [1, 0], 2)).toEqual([]);
+    });
+
+    it('returns the single best candidate when k=1', () => {
+        const centroid = [1, 0];
+        const candidates = ['alpha', 'beta', 'gamma'];
+        const vectors = [
+            [1, 0],     // alpha — closest to centroid
+            [0, 1],     // beta  — orthogonal
+            [0.5, 0.5], // gamma — middle
+        ];
+        expect(topKeywords(candidates, vectors, centroid, 1)).toEqual(['alpha']);
+    });
+
+    it('returns at most k results', () => {
+        const centroid = [1, 0];
+        const candidates = ['a', 'b', 'c', 'd'];
+        const vectors = [[1, 0], [0.9, 0.1], [0.5, 0.5], [0, 1]];
+        expect(topKeywords(candidates, vectors, centroid, 2)).toHaveLength(2);
+    });
+
+    it('ranks candidates by descending similarity to the centroid', () => {
+        const centroid = [1, 0];
+        const candidates = ['low', 'mid', 'high'];
+        const vectors = [
+            [0, 1],     // low  — orthogonal to centroid
+            [0.7, 0.7], // mid
+            [1, 0],     // high — identical to centroid
+        ];
+        const result = topKeywords(candidates, vectors, centroid, 3);
+        expect(result[0]).toBe('high');
+        expect(result[2]).toBe('low');
     });
 });
