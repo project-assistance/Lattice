@@ -1,0 +1,105 @@
+.gemini-gate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  padding: 16px;
+}
+
+.gemini-gate__msg {
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 0.82rem;
+  margin: 0;
+}
+
+.gemini-gate__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  width: 100%;
+  max-width: 280px;
+}
+
+.gemini-gate__icon {
+  font-size: 1.5rem;
+  color: #646cff;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.gemini-gate__icon--dim {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+.gemini-gate__title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.gemini-gate__body {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.45);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.gemini-gate__error {
+  font-size: 0.75rem;
+  color: #f87171;
+  margin: 0;
+}
+
+.gemini-gate__btn {
+  margin-top: 4px;
+  width: 100%;
+  padding: 0.55em 1em;
+  font-size: 0.85rem;
+  background-color: #646cff;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.gemini-gate__btn:hover {
+  background-color: #535bf2;
+  border-color: transparent;
+}
+
+.gemini-gate__link {
+  font-size: 0.75rem;
+  color: rgba(100, 108, 255, 0.7);
+  text-decoration: none;
+  margin-top: 2px;
+}
+
+.gemini-gate__link:hover {
+  color: #646cff;
+}
+
+.gemini-gate__progress-wrap {
+  width: 100%;
+  height: 4px;
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.gemini-gate__progress-bar {
+  height: 100%;
+  border-radius: 999px;
+  background-color: #646cff;
+  transition: width 0.3s ease;
+}
+
+.gemini-gate__progress-label {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.35);
+  margin: 0;
+}

@@ -1,0 +1,1225 @@
+{
+  "version": "2026-06-23",
+  "categories": [
+    "code",
+    "communication",
+    "community",
+    "document",
+    "media",
+    "reading",
+    "reference",
+    "research",
+    "shopping",
+    "social",
+    "tools",
+    "travel",
+    "video",
+    "work",
+    "ai",
+    "finance",
+    "education",
+    "documentation",
+    "entertainment"
+  ],
+  "sites": [
+    {
+      "id": "google-search",
+      "domains": ["google.com", "google.co.uk", "google.ca", "google.de", "google.fr", "google.co.in", "google.com.au"],
+      "category": "reference",
+      "tool": "google-search",
+      "multipurpose": true,
+      "possibleCategories": ["reference", "shopping", "reading"],
+      "paths": [
+        {
+          "match": "^/search",
+          "extract": {"query": {"query": "q"}},
+          "signal": "web-search-query"
+        }
+      ]
+    },
+    {
+      "id": "bing",
+      "domains": ["bing.com"],
+      "category": "reference",
+      "tool": "bing",
+      "multipurpose": false,
+      "paths": [
+        {
+          "match": "^/search",
+          "extract": {"query": {"query": "q"}},
+          "signal": "web-search-query"
+        }
+      ]
+    },
+    {
+      "id": "duckduckgo",
+      "domains": ["duckduckgo.com"],
+      "category": "reference",
+      "tool": "duckduckgo",
+      "multipurpose": false,
+      "paths": [
+        {
+          "match": "^/",
+          "extract": {"query": {"query": "q"}},
+          "signal": "web-search-query"
+        }
+      ]
+    },
+    {
+      "id": "wikipedia",
+      "domains": ["wikipedia.org", "en.wikipedia.org", "m.wikipedia.org"],
+      "category": "reference",
+      "tool": "wikipedia",
+      "multipurpose": true,
+      "possibleCategories": ["reference", "research", "reading"],
+      "paths": [
+        {
+          "match": "^/wiki/(.+)$",
+          "extract": {"article": 1},
+          "signal": "encyclopedia-article"
+        }
+      ]
+    },
+    {
+      "id": "wolframalpha",
+      "domains": ["wolframalpha.com"],
+      "category": "reference",
+      "tool": "wolfram-alpha",
+      "multipurpose": false
+    },
+    {
+      "id": "google-scholar",
+      "domains": ["scholar.google.com"],
+      "category": "research",
+      "tool": "google-scholar",
+      "multipurpose": false,
+      "paths": [
+        {
+          "match": "^/scholar",
+          "extract": {"query": {"query": "q"}},
+          "signal": "academic-search"
+        }
+      ]
+    },
+    {
+      "id": "youtube",
+      "domains": ["youtube.com", "m.youtube.com"],
+      "category": "video",
+      "tool": "youtube",
+      "multipurpose": true,
+      "possibleCategories": ["video", "entertainment", "education", "media"],
+      "paths": [
+        {
+          "match": "^/watch",
+          "extract": {"videoId": {"query": "v"}},
+          "signal": "watching-video"
+        },
+        {
+          "match": "^/results",
+          "extract": {"query": {"query": "search_query"}},
+          "signal": "video-search"
+        },
+        {
+          "match": "^/@([^/]+)",
+          "extract": {"channel": 1},
+          "signal": "channel-page"
+        },
+        {
+          "match": "^/shorts/",
+          "signal": "watching-shorts"
+        }
+      ]
+    },
+    {
+      "id": "youtube-music",
+      "domains": ["music.youtube.com"],
+      "category": "media",
+      "tool": "youtube-music",
+      "multipurpose": false
+    },
+    {
+      "id": "youtube-studio",
+      "domains": ["studio.youtube.com"],
+      "category": "tools",
+      "tool": "youtube-studio",
+      "multipurpose": false
+    },
+    {
+      "id": "netflix",
+      "domains": ["netflix.com"],
+      "category": "video",
+      "tool": "netflix",
+      "multipurpose": false
+    },
+    {
+      "id": "twitch",
+      "domains": ["twitch.tv", "m.twitch.tv"],
+      "category": "video",
+      "tool": "twitch",
+      "multipurpose": true,
+      "possibleCategories": ["video", "entertainment", "community"]
+    },
+    {
+      "id": "vimeo",
+      "domains": ["vimeo.com"],
+      "category": "video",
+      "tool": "vimeo",
+      "multipurpose": false
+    },
+    {
+      "id": "disney-plus",
+      "domains": ["disneyplus.com"],
+      "category": "video",
+      "tool": "disney-plus",
+      "multipurpose": false
+    },
+    {
+      "id": "primevideo",
+      "domains": ["primevideo.com"],
+      "category": "video",
+      "tool": "prime-video",
+      "multipurpose": false
+    },
+    {
+      "id": "facebook",
+      "domains": ["facebook.com", "m.facebook.com", "web.facebook.com"],
+      "category": "social",
+      "tool": "facebook",
+      "multipurpose": true,
+      "possibleCategories": ["social", "community", "communication"]
+    },
+    {
+      "id": "instagram",
+      "domains": ["instagram.com"],
+      "category": "social",
+      "tool": "instagram",
+      "multipurpose": true,
+      "possibleCategories": ["social", "entertainment", "media"]
+    },
+    {
+      "id": "twitter",
+      "domains": ["twitter.com", "x.com", "mobile.twitter.com"],
+      "category": "social",
+      "tool": "twitter",
+      "multipurpose": true,
+      "possibleCategories": ["social", "community", "reading", "reference"],
+      "paths": [
+        {
+          "match": "^/search",
+          "extract": {"query": {"query": "q"}},
+          "signal": "social-search"
+        },
+        {
+          "match": "^/([^/]+)/status/",
+          "extract": {"user": 1},
+          "signal": "viewing-post"
+        }
+      ]
+    },
+    {
+      "id": "linkedin",
+      "domains": ["linkedin.com"],
+      "category": "social",
+      "tool": "linkedin",
+      "multipurpose": true,
+      "possibleCategories": ["social", "work", "community", "reading"],
+      "paths": [
+        {
+          "match": "^/jobs/",
+          "signal": "job-search"
+        },
+        {
+          "match": "^/in/([^/]+)",
+          "extract": {"profile": 1},
+          "signal": "viewing-profile"
+        }
+      ]
+    },
+    {
+      "id": "reddit",
+      "domains": ["reddit.com", "old.reddit.com", "new.reddit.com", "np.reddit.com"],
+      "category": "community",
+      "tool": "reddit",
+      "multipurpose": true,
+      "possibleCategories": ["community", "social", "reading", "entertainment"],
+      "paths": [
+        {
+          "match": "^/r/([^/]+)",
+          "extract": {"subreddit": 1},
+          "signal": "viewing-subreddit"
+        },
+        {
+          "match": "^/search",
+          "extract": {"query": {"query": "q"}},
+          "signal": "community-search"
+        }
+      ]
+    },
+    {
+      "id": "tiktok",
+      "domains": ["tiktok.com"],
+      "category": "video",
+      "tool": "tiktok",
+      "multipurpose": true,
+      "possibleCategories": ["video", "entertainment", "social"]
+    },
+    {
+      "id": "pinterest",
+      "domains": ["pinterest.com", "pinterest.co.uk", "pinterest.ca"],
+      "category": "social",
+      "tool": "pinterest",
+      "multipurpose": true,
+      "possibleCategories": ["social", "tools", "shopping"]
+    },
+    {
+      "id": "mastodon",
+      "domains": ["mastodon.social"],
+      "category": "social",
+      "tool": "mastodon",
+      "multipurpose": true,
+      "possibleCategories": ["social", "community"]
+    },
+    {
+      "id": "bluesky",
+      "domains": ["bsky.app"],
+      "category": "social",
+      "tool": "bluesky",
+      "multipurpose": true,
+      "possibleCategories": ["social", "community", "reading"]
+    },
+    {
+      "id": "threads",
+      "domains": ["threads.net"],
+      "category": "social",
+      "tool": "threads",
+      "multipurpose": true,
+      "possibleCategories": ["social", "community"]
+    },
+    {
+      "id": "github",
+      "domains": ["github.com"],
+      "category": "code",
+      "tool": "github",
+      "multipurpose": true,
+      "possibleCategories": ["code", "documentation", "community"],
+      "paths": [
+        {
+          "match": "^/([^/]+)/([^/]+)/?$",
+          "extract": {"owner": 1, "repo": 2},
+          "signal": "viewing-repo"
+        },
+        {
+          "match": "^/([^/]+)/([^/]+)/(issues|pull|pulls)",
+          "extract": {"owner": 1, "repo": 2, "section": 3},
+          "signal": "issues-or-prs"
+        },
+        {
+          "match": "^/search",
+          "extract": {"query": {"query": "q"}},
+          "signal": "code-search"
+        }
+      ]
+    },
+    {
+      "id": "gitlab",
+      "domains": ["gitlab.com"],
+      "category": "code",
+      "tool": "gitlab",
+      "multipurpose": true,
+      "possibleCategories": ["code", "documentation"],
+      "paths": [
+        {
+          "match": "^/([^/]+)/([^/]+)/?$",
+          "extract": {"owner": 1, "repo": 2},
+          "signal": "viewing-repo"
+        }
+      ]
+    },
+    {
+      "id": "bitbucket",
+      "domains": ["bitbucket.org"],
+      "category": "code",
+      "tool": "bitbucket",
+      "multipurpose": false
+    },
+    {
+      "id": "stackoverflow",
+      "domains": ["stackoverflow.com"],
+      "category": "documentation",
+      "tool": "stack-overflow",
+      "multipurpose": true,
+      "possibleCategories": ["documentation", "community", "code"],
+      "paths": [
+        {
+          "match": "^/questions/(\\d+)",
+          "extract": {"questionId": 1},
+          "signal": "viewing-question"
+        }
+      ]
+    },
+    {
+      "id": "stackexchange",
+      "domains": ["stackexchange.com", "superuser.com", "serverfault.com", "askubuntu.com"],
+      "category": "community",
+      "tool": "stack-exchange",
+      "multipurpose": true,
+      "possibleCategories": ["community", "documentation", "reference"]
+    },
+    {
+      "id": "mdn",
+      "domains": ["developer.mozilla.org"],
+      "category": "documentation",
+      "tool": "mdn",
+      "multipurpose": false
+    },
+    {
+      "id": "npm",
+      "domains": ["npmjs.com"],
+      "category": "documentation",
+      "tool": "npm",
+      "multipurpose": true,
+      "possibleCategories": ["documentation", "code"]
+    },
+    {
+      "id": "pypi",
+      "domains": ["pypi.org"],
+      "category": "documentation",
+      "tool": "pypi",
+      "multipurpose": true,
+      "possibleCategories": ["documentation", "code"]
+    },
+    {
+      "id": "readthedocs",
+      "domains": ["readthedocs.io", "readthedocs.org"],
+      "category": "documentation",
+      "tool": "read-the-docs",
+      "multipurpose": false
+    },
+    {
+      "id": "devdocs",
+      "domains": ["devdocs.io"],
+      "category": "documentation",
+      "tool": "devdocs",
+      "multipurpose": false
+    },
+    {
+      "id": "codepen",
+      "domains": ["codepen.io"],
+      "category": "code",
+      "tool": "codepen",
+      "multipurpose": false
+    },
+    {
+      "id": "replit",
+      "domains": ["replit.com"],
+      "category": "code",
+      "tool": "replit",
+      "multipurpose": true,
+      "possibleCategories": ["code", "education"]
+    },
+    {
+      "id": "huggingface",
+      "domains": ["huggingface.co"],
+      "category": "code",
+      "tool": "hugging-face",
+      "multipurpose": true,
+      "possibleCategories": ["code", "ai", "research"]
+    },
+    {
+      "id": "kaggle",
+      "domains": ["kaggle.com"],
+      "category": "research",
+      "tool": "kaggle",
+      "multipurpose": true,
+      "possibleCategories": ["research", "code", "education"]
+    },
+    {
+      "id": "gmail",
+      "domains": ["mail.google.com"],
+      "category": "communication",
+      "tool": "gmail",
+      "multipurpose": false
+    },
+    {
+      "id": "outlook",
+      "domains": ["outlook.com", "outlook.live.com", "outlook.office.com", "outlook.office365.com"],
+      "category": "communication",
+      "tool": "outlook",
+      "multipurpose": true,
+      "possibleCategories": ["communication", "tools"]
+    },
+    {
+      "id": "proton-mail",
+      "domains": ["mail.proton.me", "protonmail.com"],
+      "category": "communication",
+      "tool": "proton-mail",
+      "multipurpose": false
+    },
+    {
+      "id": "slack",
+      "domains": ["slack.com", "app.slack.com"],
+      "category": "communication",
+      "tool": "slack",
+      "multipurpose": true,
+      "possibleCategories": ["communication", "work"]
+    },
+    {
+      "id": "discord",
+      "domains": ["discord.com"],
+      "category": "communication",
+      "tool": "discord",
+      "multipurpose": true,
+      "possibleCategories": ["communication", "community", "social"]
+    },
+    {
+      "id": "whatsapp-web",
+      "domains": ["web.whatsapp.com"],
+      "category": "communication",
+      "tool": "whatsapp",
+      "multipurpose": false
+    },
+    {
+      "id": "telegram-web",
+      "domains": ["web.telegram.org"],
+      "category": "communication",
+      "tool": "telegram",
+      "multipurpose": true,
+      "possibleCategories": ["communication", "community"]
+    },
+    {
+      "id": "zoom",
+      "domains": ["zoom.us"],
+      "category": "communication",
+      "tool": "zoom",
+      "multipurpose": false
+    },
+    {
+      "id": "google-meet",
+      "domains": ["meet.google.com"],
+      "category": "communication",
+      "tool": "google-meet",
+      "multipurpose": false
+    },
+    {
+      "id": "google-docs",
+      "domains": ["docs.google.com"],
+      "category": "document",
+      "tool": "google-docs",
+      "multipurpose": true,
+      "possibleCategories": ["document", "tools"],
+      "paths": [
+        {
+          "match": "^/document/",
+          "signal": "editing-doc"
+        },
+        {
+          "match": "^/spreadsheets/",
+          "signal": "editing-spreadsheet"
+        },
+        {
+          "match": "^/presentation/",
+          "signal": "editing-slides"
+        },
+        {
+          "match": "^/forms/",
+          "signal": "editing-form"
+        }
+      ]
+    },
+    {
+      "id": "google-drive",
+      "domains": ["drive.google.com"],
+      "category": "tools",
+      "tool": "google-drive",
+      "multipurpose": false
+    },
+    {
+      "id": "notion",
+      "domains": ["notion.so", "notion.com"],
+      "category": "document",
+      "tool": "notion",
+      "multipurpose": true,
+      "possibleCategories": ["document", "tools"]
+    },
+    {
+      "id": "obsidian",
+      "domains": ["obsidian.md"],
+      "category": "document",
+      "tool": "obsidian",
+      "multipurpose": false
+    },
+    {
+      "id": "confluence",
+      "domains": ["confluence.com"],
+      "category": "document",
+      "tool": "confluence",
+      "multipurpose": true,
+      "possibleCategories": ["document", "documentation", "work"]
+    },
+    {
+      "id": "coda",
+      "domains": ["coda.io"],
+      "category": "document",
+      "tool": "coda",
+      "multipurpose": true,
+      "possibleCategories": ["document", "tools"]
+    },
+    {
+      "id": "figma",
+      "domains": ["figma.com"],
+      "category": "tools",
+      "tool": "figma",
+      "multipurpose": false
+    },
+    {
+      "id": "canva",
+      "domains": ["canva.com"],
+      "category": "tools",
+      "tool": "canva",
+      "multipurpose": true,
+      "possibleCategories": ["tools", "document"]
+    },
+    {
+      "id": "linear",
+      "domains": ["linear.app"],
+      "category": "tools",
+      "tool": "linear",
+      "multipurpose": false
+    },
+    {
+      "id": "jira",
+      "domains": ["atlassian.net"],
+      "category": "tools",
+      "tool": "jira",
+      "multipurpose": true,
+      "possibleCategories": ["tools", "work"]
+    },
+    {
+      "id": "trello",
+      "domains": ["trello.com"],
+      "category": "tools",
+      "tool": "trello",
+      "multipurpose": false
+    },
+    {
+      "id": "asana",
+      "domains": ["asana.com", "app.asana.com"],
+      "category": "tools",
+      "tool": "asana",
+      "multipurpose": false
+    },
+    {
+      "id": "monday",
+      "domains": ["monday.com"],
+      "category": "tools",
+      "tool": "monday",
+      "multipurpose": true,
+      "possibleCategories": ["tools", "work"]
+    },
+    {
+      "id": "airtable",
+      "domains": ["airtable.com"],
+      "category": "tools",
+      "tool": "airtable",
+      "multipurpose": true,
+      "possibleCategories": ["tools", "document"]
+    },
+    {
+      "id": "miro",
+      "domains": ["miro.com"],
+      "category": "tools",
+      "tool": "miro",
+      "multipurpose": false
+    },
+    {
+      "id": "calendly",
+      "domains": ["calendly.com"],
+      "category": "tools",
+      "tool": "calendly",
+      "multipurpose": false
+    },
+    {
+      "id": "google-calendar",
+      "domains": ["calendar.google.com"],
+      "category": "tools",
+      "tool": "google-calendar",
+      "multipurpose": false
+    },
+    {
+      "id": "chatgpt",
+      "domains": ["chatgpt.com", "chat.openai.com"],
+      "category": "ai",
+      "tool": "chatgpt",
+      "multipurpose": true,
+      "possibleCategories": ["ai", "tools", "reference"]
+    },
+    {
+      "id": "claude",
+      "domains": ["claude.ai"],
+      "category": "ai",
+      "tool": "claude",
+      "multipurpose": true,
+      "possibleCategories": ["ai", "tools", "code"]
+    },
+    {
+      "id": "gemini",
+      "domains": ["gemini.google.com"],
+      "category": "ai",
+      "tool": "gemini",
+      "multipurpose": true,
+      "possibleCategories": ["ai", "tools", "reference"]
+    },
+    {
+      "id": "perplexity",
+      "domains": ["perplexity.ai"],
+      "category": "ai",
+      "tool": "perplexity",
+      "multipurpose": true,
+      "possibleCategories": ["ai", "reference", "research"]
+    },
+    {
+      "id": "copilot",
+      "domains": ["copilot.microsoft.com"],
+      "category": "ai",
+      "tool": "copilot",
+      "multipurpose": true,
+      "possibleCategories": ["ai", "tools"]
+    },
+    {
+      "id": "openai-platform",
+      "domains": ["platform.openai.com"],
+      "category": "ai",
+      "tool": "openai-platform",
+      "multipurpose": true,
+      "possibleCategories": ["ai", "documentation", "code"]
+    },
+    {
+      "id": "amazon",
+      "domains": ["amazon.com", "amazon.co.uk", "amazon.de", "amazon.fr", "amazon.ca", "amazon.co.jp", "amazon.in", "amazon.com.au"],
+      "category": "shopping",
+      "tool": "amazon",
+      "multipurpose": true,
+      "possibleCategories": ["shopping", "video", "reading"],
+      "paths": [
+        {
+          "match": "^/s",
+          "extract": {"query": {"query": "k"}},
+          "signal": "product-search"
+        },
+        {
+          "match": "^/(dp|gp/product)/",
+          "signal": "product-page"
+        }
+      ]
+    },
+    {
+      "id": "ebay",
+      "domains": ["ebay.com", "ebay.co.uk", "ebay.de", "ebay.ca"],
+      "category": "shopping",
+      "tool": "ebay",
+      "multipurpose": false,
+      "paths": [
+        {
+          "match": "^/sch/",
+          "signal": "product-search"
+        },
+        {
+          "match": "^/itm/",
+          "signal": "product-page"
+        }
+      ]
+    },
+    {
+      "id": "etsy",
+      "domains": ["etsy.com"],
+      "category": "shopping",
+      "tool": "etsy",
+      "multipurpose": false
+    },
+    {
+      "id": "aliexpress",
+      "domains": ["aliexpress.com", "aliexpress.us"],
+      "category": "shopping",
+      "tool": "aliexpress",
+      "multipurpose": false
+    },
+    {
+      "id": "walmart",
+      "domains": ["walmart.com"],
+      "category": "shopping",
+      "tool": "walmart",
+      "multipurpose": false
+    },
+    {
+      "id": "bestbuy",
+      "domains": ["bestbuy.com", "bestbuy.ca"],
+      "category": "shopping",
+      "tool": "best-buy",
+      "multipurpose": false
+    },
+    {
+      "id": "nytimes",
+      "domains": ["nytimes.com"],
+      "category": "reading",
+      "tool": "nytimes",
+      "multipurpose": true,
+      "possibleCategories": ["reading", "reference"]
+    },
+    {
+      "id": "theguardian",
+      "domains": ["theguardian.com"],
+      "category": "reading",
+      "tool": "the-guardian",
+      "multipurpose": false
+    },
+    {
+      "id": "bbc",
+      "domains": ["bbc.com", "bbc.co.uk"],
+      "category": "reading",
+      "tool": "bbc",
+      "multipurpose": true,
+      "possibleCategories": ["reading", "video"]
+    },
+    {
+      "id": "medium",
+      "domains": ["medium.com"],
+      "category": "reading",
+      "tool": "medium",
+      "multipurpose": true,
+      "possibleCategories": ["reading", "community"]
+    },
+    {
+      "id": "substack",
+      "domains": ["substack.com"],
+      "category": "reading",
+      "tool": "substack",
+      "multipurpose": true,
+      "possibleCategories": ["reading", "community"]
+    },
+    {
+      "id": "hackernews",
+      "domains": ["news.ycombinator.com"],
+      "category": "community",
+      "tool": "hacker-news",
+      "multipurpose": true,
+      "possibleCategories": ["community", "reading", "code"]
+    },
+    {
+      "id": "arstechnica",
+      "domains": ["arstechnica.com"],
+      "category": "reading",
+      "tool": "ars-technica",
+      "multipurpose": false
+    },
+    {
+      "id": "theverge",
+      "domains": ["theverge.com"],
+      "category": "reading",
+      "tool": "the-verge",
+      "multipurpose": false
+    },
+    {
+      "id": "reuters",
+      "domains": ["reuters.com"],
+      "category": "reading",
+      "tool": "reuters",
+      "multipurpose": false
+    },
+    {
+      "id": "arxiv",
+      "domains": ["arxiv.org"],
+      "category": "research",
+      "tool": "arxiv",
+      "multipurpose": true,
+      "possibleCategories": ["research", "reading"],
+      "paths": [
+        {
+          "match": "^/abs/(.+)$",
+          "extract": {"paperId": 1},
+          "signal": "viewing-paper"
+        }
+      ]
+    },
+    {
+      "id": "pubmed",
+      "domains": ["pubmed.ncbi.nlm.nih.gov"],
+      "category": "research",
+      "tool": "pubmed",
+      "multipurpose": false
+    },
+    {
+      "id": "researchgate",
+      "domains": ["researchgate.net"],
+      "category": "research",
+      "tool": "researchgate",
+      "multipurpose": true,
+      "possibleCategories": ["research", "social"]
+    },
+    {
+      "id": "jstor",
+      "domains": ["jstor.org"],
+      "category": "research",
+      "tool": "jstor",
+      "multipurpose": false
+    },
+    {
+      "id": "coursera",
+      "domains": ["coursera.org"],
+      "category": "education",
+      "tool": "coursera",
+      "multipurpose": false
+    },
+    {
+      "id": "udemy",
+      "domains": ["udemy.com"],
+      "category": "education",
+      "tool": "udemy",
+      "multipurpose": false
+    },
+    {
+      "id": "khanacademy",
+      "domains": ["khanacademy.org"],
+      "category": "education",
+      "tool": "khan-academy",
+      "multipurpose": false
+    },
+    {
+      "id": "edx",
+      "domains": ["edx.org"],
+      "category": "education",
+      "tool": "edx",
+      "multipurpose": false
+    },
+    {
+      "id": "duolingo",
+      "domains": ["duolingo.com"],
+      "category": "education",
+      "tool": "duolingo",
+      "multipurpose": false
+    },
+    {
+      "id": "booking",
+      "domains": ["booking.com"],
+      "category": "travel",
+      "tool": "booking",
+      "multipurpose": false
+    },
+    {
+      "id": "airbnb",
+      "domains": ["airbnb.com", "airbnb.ca", "airbnb.co.uk"],
+      "category": "travel",
+      "tool": "airbnb",
+      "multipurpose": false
+    },
+    {
+      "id": "google-maps",
+      "domains": ["maps.google.com"],
+      "category": "travel",
+      "tool": "google-maps",
+      "multipurpose": true,
+      "possibleCategories": ["travel", "reference"]
+    },
+    {
+      "id": "paypal",
+      "domains": ["paypal.com"],
+      "category": "finance",
+      "tool": "paypal",
+      "multipurpose": false
+    },
+    {
+      "id": "stripe",
+      "domains": ["stripe.com", "dashboard.stripe.com"],
+      "category": "finance",
+      "tool": "stripe",
+      "multipurpose": true,
+      "possibleCategories": ["finance", "tools"]
+    },
+    {
+      "id": "coinbase",
+      "domains": ["coinbase.com"],
+      "category": "finance",
+      "tool": "coinbase",
+      "multipurpose": false
+    },
+    {
+      "id": "wise",
+      "domains": ["wise.com"],
+      "category": "finance",
+      "tool": "wise",
+      "multipurpose": false
+    },
+    {
+      "id": "spotify",
+      "domains": ["spotify.com", "open.spotify.com"],
+      "category": "media",
+      "tool": "spotify",
+      "multipurpose": true,
+      "possibleCategories": ["media", "entertainment"]
+    },
+    {
+      "id": "soundcloud",
+      "domains": ["soundcloud.com"],
+      "category": "media",
+      "tool": "soundcloud",
+      "multipurpose": false
+    },
+    {
+      "id": "applemusic",
+      "domains": ["music.apple.com"],
+      "category": "media",
+      "tool": "apple-music",
+      "multipurpose": false
+    },
+    {
+      "id": "steam",
+      "domains": ["store.steampowered.com", "steamcommunity.com"],
+      "category": "entertainment",
+      "tool": "steam",
+      "multipurpose": true,
+      "possibleCategories": ["entertainment", "shopping", "community"]
+    },
+    {
+      "id": "imdb",
+      "domains": ["imdb.com"],
+      "category": "entertainment",
+      "tool": "imdb",
+      "multipurpose": true,
+      "possibleCategories": ["entertainment", "reference"]
+    },
+    {
+      "id": "goodreads",
+      "domains": ["goodreads.com"],
+      "category": "entertainment",
+      "tool": "goodreads",
+      "multipurpose": true,
+      "possibleCategories": ["entertainment", "community", "reading"]
+    },
+    {
+      "id": "chess",
+      "domains": ["chess.com", "lichess.org"],
+      "category": "entertainment",
+      "tool": "chess",
+      "multipurpose": false
+    },
+    {
+      "id": "dropbox",
+      "domains": ["dropbox.com"],
+      "category": "tools",
+      "tool": "dropbox",
+      "multipurpose": false
+    },
+    {
+      "id": "onedrive",
+      "domains": ["onedrive.live.com"],
+      "category": "tools",
+      "tool": "onedrive",
+      "multipurpose": false
+    },
+    {
+      "id": "salesforce",
+      "domains": ["salesforce.com", "lightning.force.com"],
+      "category": "work",
+      "tool": "salesforce",
+      "multipurpose": true,
+      "possibleCategories": ["work", "tools"]
+    },
+    {
+      "id": "hubspot",
+      "domains": ["hubspot.com", "app.hubspot.com"],
+      "category": "work",
+      "tool": "hubspot",
+      "multipurpose": true,
+      "possibleCategories": ["work", "tools"]
+    },
+    {
+      "id": "workday",
+      "domains": ["workday.com", "myworkday.com"],
+      "category": "work",
+      "tool": "workday",
+      "multipurpose": false
+    },
+    {
+      "id": "greenhouse",
+      "domains": ["greenhouse.io"],
+      "category": "work",
+      "tool": "greenhouse",
+      "multipurpose": false
+    },
+    {
+      "id": "indeed",
+      "domains": ["indeed.com"],
+      "category": "work",
+      "tool": "indeed",
+      "multipurpose": false
+    },
+    {
+      "id": "google-translate",
+      "domains": ["translate.google.com"],
+      "category": "reference",
+      "tool": "google-translate",
+      "multipurpose": false
+    },
+    {
+      "id": "cloudflare",
+      "domains": ["dash.cloudflare.com"],
+      "category": "tools",
+      "tool": "cloudflare",
+      "multipurpose": true,
+      "possibleCategories": ["tools", "code"]
+    },
+    {
+      "id": "vercel",
+      "domains": ["vercel.com"],
+      "category": "tools",
+      "tool": "vercel",
+      "multipurpose": true,
+      "possibleCategories": ["tools", "code"]
+    },
+    {
+      "id": "aws-console",
+      "domains": ["console.aws.amazon.com"],
+      "category": "tools",
+      "tool": "aws-console",
+      "multipurpose": true,
+      "possibleCategories": ["tools", "code"]
+    }
+  ],
+  "patterns": [
+    {
+      "id": "docs-subdomain",
+      "domainPattern": "^docs?\\.",
+      "category": "documentation",
+      "signal": "documentation-site"
+    },
+    {
+      "id": "api-subdomain",
+      "domainPattern": "^api\\.",
+      "category": "documentation",
+      "signal": "api-reference"
+    },
+    {
+      "id": "developer-subdomain",
+      "domainPattern": "^developers?\\.",
+      "category": "documentation",
+      "signal": "developer-docs"
+    },
+    {
+      "id": "substack-custom",
+      "domainPattern": "\\.substack\\.com$",
+      "category": "reading",
+      "signal": "newsletter"
+    },
+    {
+      "id": "medium-publication",
+      "domainPattern": "\\.medium\\.com$",
+      "category": "reading",
+      "signal": "blog-publication"
+    },
+    {
+      "id": "atlassian",
+      "domainPattern": "\\.atlassian\\.net$",
+      "category": "tools",
+      "signal": "atlassian-workspace"
+    },
+    {
+      "id": "zendesk",
+      "domainPattern": "\\.zendesk\\.com$",
+      "category": "work",
+      "signal": "support-desk"
+    },
+    {
+      "id": "slack-workspace",
+      "domainPattern": "\\.slack\\.com$",
+      "category": "communication",
+      "signal": "slack-workspace"
+    },
+    {
+      "id": "shopify-store",
+      "domainPattern": "\\.myshopify\\.com$",
+      "category": "shopping",
+      "signal": "online-store"
+    },
+    {
+      "id": "notion-site",
+      "domainPattern": "\\.notion\\.site$",
+      "category": "document",
+      "signal": "shared-notion-page"
+    },
+    {
+      "id": "wordpress-blog",
+      "domainPattern": "\\.wordpress\\.com$",
+      "category": "reading",
+      "signal": "hosted-blog"
+    },
+    {
+      "id": "github-pages",
+      "domainPattern": "\\.github\\.io$",
+      "category": "documentation",
+      "signal": "project-site"
+    },
+    {
+      "id": "gitlab-pages",
+      "domainPattern": "\\.gitlab\\.io$",
+      "category": "documentation",
+      "signal": "project-site"
+    },
+    {
+      "id": "readthedocs-hosted",
+      "domainPattern": "\\.readthedocs\\.io$",
+      "category": "documentation",
+      "signal": "hosted-docs"
+    },
+    {
+      "id": "netlify-app",
+      "domainPattern": "\\.netlify\\.app$",
+      "category": "tools",
+      "signal": "deployed-app"
+    },
+    {
+      "id": "vercel-app",
+      "domainPattern": "\\.vercel\\.app$",
+      "category": "tools",
+      "signal": "deployed-app"
+    },
+    {
+      "id": "blogspot",
+      "domainPattern": "\\.blogspot\\.com$",
+      "category": "reading",
+      "signal": "hosted-blog"
+    },
+    {
+      "id": "gitbook",
+      "domainPattern": "\\.gitbook\\.io$",
+      "category": "documentation",
+      "signal": "hosted-docs"
+    },
+    {
+      "id": "freshdesk",
+      "domainPattern": "\\.freshdesk\\.com$",
+      "category": "work",
+      "signal": "support-desk"
+    },
+    {
+      "id": "wiki-subdomain",
+      "domainPattern": "^wiki\\.",
+      "category": "reference",
+      "signal": "wiki-site"
+    }
+  ],
+  "aliases": {
+    "youtu.be": "youtube.com",
+    "fb.com": "facebook.com",
+    "fb.me": "facebook.com",
+    "g.co": "google.com",
+    "goo.gl": "google.com",
+    "amzn.to": "amazon.com",
+    "a.co": "amazon.com",
+    "t.co": "twitter.com",
+    "wikipedia.com": "wikipedia.org",
+    "reddit.app.link": "reddit.com",
+    "redd.it": "reddit.com",
+    "bit.ly": "bitly.com",
+    "lnkd.in": "linkedin.com",
+    "spoti.fi": "spotify.com"
+  }
+}
