@@ -51,8 +51,8 @@ export default function TabList({
         const dotColor = groupInfo ? (CHROME_GROUP_COLORS[groupInfo.color] ?? groupInfo.color) : null
 
         const cardStyle: React.CSSProperties | undefined = isMultiGroup && dotColor ? {
-          backgroundColor: dotColor + '12',
-          borderColor: dotColor + '40',
+          backgroundColor: dotColor + '55',
+          borderColor: dotColor + '80',
         } : undefined
 
         return (

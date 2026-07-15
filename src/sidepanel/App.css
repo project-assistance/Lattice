@@ -8,16 +8,16 @@
   align-items: center;
   justify-content: space-between;
   padding: 10px 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(46, 38, 0, 0.08);
   position: sticky;
   top: 0;
-  background-color: #242424;
+  background-color: #FFFEF5;
   z-index: 1;
 }
 
 .tab-count {
   font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(46, 38, 0, 0.4);
 }
 
 .toolbar-actions {
@@ -34,12 +34,12 @@
   background: none;
   border: 1px solid transparent;
   border-radius: 6px;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(46, 38, 0, 0.45);
   cursor: pointer;
   transition: color 0.15s, border-color 0.15s;
 }
 
 .icon-btn:hover {
-  color: rgba(255, 255, 255, 0.9);
-  border-color: rgba(255, 255, 255, 0.15);
+  color: rgba(46, 38, 0, 0.85);
+  border-color: rgba(46, 38, 0, 0.15);
 }

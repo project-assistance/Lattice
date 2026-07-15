@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap');
+
 .popup-container {
   position: fixed;
   right: 0;
@@ -6,7 +8,7 @@
   z-index: 100;
   display: flex;
   align-items: flex-end;
-  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-family: 'Quicksand', system-ui, sans-serif;
   user-select: none;
   line-height: 1em;
 }

@@ -94,15 +94,22 @@ async function runTabCompare(tabs: EnrichedTabs, sendResponse: (response: any) =
         const multiIndices = clusterIndices.filter((_, i) => clusteredTabs[i].length > 1);
         const multiClusters = clusteredTabs.filter(c => c.length > 1);
         const singleTabs = clusteredTabs.filter(c => c.length === 1).flat();
+        const singletonIndices = clusterIndices.filter((_, i) => clusteredTabs[i].length === 1).flat();
 
         const multiLabels = await generateLabels(multiClusters, multiIndices, embedder, tabs, vectors);
 
         const finalClusters = singleTabs.length > 0 ? [...multiClusters, singleTabs] : multiClusters;
         const finalLabels = singleTabs.length > 0 ? [...multiLabels, 'Ungrouped'] : multiLabels;
 
+        // One centroid per cluster — parallel to finalClusters/finalLabels.
+        const multiCentroids = multiIndices.map(group => computeCentroid(group.map(idx => vectors[idx])));
+        const finalCentroids: number[][] = singleTabs.length > 0
+            ? [...multiCentroids, computeCentroid(singletonIndices.map(idx => vectors[idx]))]
+            : multiCentroids;
+
         console.log('Clustered tabs:', finalClusters);
         console.log('Cluster labels:', finalLabels);
-        sendResponse({ status: 'success', vector: vectors, clusters: finalClusters, labels: finalLabels });
+        sendResponse({ status: 'success', vector: vectors, clusters: finalClusters, labels: finalLabels, centroids: finalCentroids });
     } catch (error: any) {
         console.error('Error in runTabCompare:', error);
         sendResponse({ status: 'error', message: error.message });
@@ -113,7 +120,22 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (message.action === 'RUN_EMBEDDINGS') {
         console.log('Received tabs for comparison:', message.tabs);
         runTabCompare(message.tabs, sendResponse);
-        return true; // keep channel open for async sendResponse
+        return true;
+    }
+
+    if (message.action === 'EMBED_SINGLE_TAB') {
+        (async () => {
+            try {
+                const embedder = await pipeline(model.task, model.id, { device: model.device, dtype: model.dtype });
+                const input = formatTabInput(message.tab.url, message.tab.title, message.tab.signal, message.tab.category);
+                const output = await embedder([input], { pooling: 'mean', normalize: true });
+                const vectors: number[][] = output.tolist();
+                sendResponse({ status: 'success', vector: vectors[0] });
+            } catch (error: any) {
+                sendResponse({ status: 'error', message: error.message });
+            }
+        })();
+        return true;
     }
 });
 

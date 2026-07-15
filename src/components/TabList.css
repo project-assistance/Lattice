@@ -8,8 +8,8 @@
 /* Card — only in multi-group (clustered) view */
 .tab-group--card {
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(245, 197, 24, 0.06);
+  border: 1px solid rgba(46, 38, 0, 0.08);
   padding: 10px;
   transition: border-color 0.2s, background-color 0.2s;
 }
@@ -44,28 +44,30 @@
 }
 
 .cluster-label {
+  font-family: 'Fredoka', system-ui, sans-serif;
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(46, 38, 0, 0.5);
 }
 
 .cluster-group-btn {
+  font-family: 'Fredoka', system-ui, sans-serif;
   font-size: 0.65rem;
   font-weight: 500;
   padding: 2px 8px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(46, 38, 0, 0.12);
   background: transparent;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(46, 38, 0, 0.4);
   cursor: pointer;
   transition: color 0.15s, border-color 0.15s, opacity 0.15s;
 }
 
 .cluster-group-btn:hover {
-  color: rgba(255, 255, 255, 0.85);
-  border-color: rgba(255, 255, 255, 0.3);
+  color: rgba(46, 38, 0, 0.85);
+  border-color: rgba(46, 38, 0, 0.3);
 }
 
 .cluster-group-btn--active {
@@ -83,24 +85,24 @@
   gap: 10px;
   padding: 6px 8px 6px 6px;
   border-radius: 999px;
-  background-color: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background-color: rgba(245, 197, 24, 0.08);
+  border: 1px solid rgba(46, 38, 0, 0.08);
   cursor: pointer;
   transition: background-color 0.1s, border-color 0.1s;
 }
 
 .tab-item:hover {
-  background-color: rgba(255, 255, 255, 0.09);
-  border-color: rgba(255, 255, 255, 0.15);
+  background-color: rgba(245, 197, 24, 0.18);
+  border-color: rgba(245, 197, 24, 0.45);
 }
 
 .tab-item--active {
-  background-color: rgba(100, 108, 255, 0.12);
-  border-color: rgba(100, 108, 255, 0.35);
+  background-color: rgba(245, 197, 24, 0.28);
+  border-color: rgba(245, 197, 24, 0.65);
 }
 
 .tab-item--active .tab-domain {
-  color: rgba(100, 108, 255, 0.7);
+  color: rgba(140, 100, 0, 0.75);
 }
 
 .tab-favicon-wrap {
@@ -131,7 +133,7 @@
 .tab-title {
   font-size: 0.82rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(46, 38, 0, 0.9);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -139,7 +141,7 @@
 
 .tab-domain {
   font-size: 0.72rem;
-  color: rgba(255, 255, 255, 0.42);
+  color: rgba(46, 38, 0, 0.42);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -152,7 +154,7 @@
   border-radius: 50%;
   border: none;
   background: transparent;
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(46, 38, 0, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -167,14 +169,14 @@
 }
 
 .tab-close:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.9);
+  background-color: rgba(46, 38, 0, 0.08);
+  color: rgba(46, 38, 0, 0.85);
 }
 
 .empty {
   padding: 24px;
   text-align: center;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(46, 38, 0, 0.4);
   font-size: 0.82rem;
   margin: 0;
 }

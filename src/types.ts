@@ -20,6 +20,14 @@ export type EnrichedTab = Tab & {
 export type ClusterCache = {
   clusters: Tab[][]
   labels: string[]
+  centroids?: number[][]
+}
+
+export type ClusterProposal = {
+  clusters: Tab[][]
+  labels: string[]
+  centroids: number[][]
+  proposedAt: number
 }
 
 export type ClusterJob = {

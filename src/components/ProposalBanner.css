@@ -1,0 +1,73 @@
+.proposal-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: rgba(245, 197, 24, 0.12);
+  border-bottom: 1px solid rgba(245, 197, 24, 0.3);
+}
+
+.proposal-banner__text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.proposal-banner__label {
+  font-family: 'Fredoka', system-ui, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: rgba(46, 38, 0, 0.88);
+  white-space: nowrap;
+}
+
+.proposal-banner__meta {
+  font-size: 0.72rem;
+  color: rgba(46, 38, 0, 0.45);
+}
+
+.proposal-banner__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.proposal-banner__apply {
+  padding: 0.3em 0.8em;
+  font-family: 'Fredoka', system-ui, sans-serif;
+  font-size: 0.8rem;
+  background-color: #52C9A8;
+  color: #2E2600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.proposal-banner__apply:hover {
+  background-color: #3DB892;
+}
+
+.proposal-banner__dismiss {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  font-size: 0.7rem;
+  background: none;
+  color: rgba(46, 38, 0, 0.35);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.proposal-banner__dismiss:hover {
+  color: rgba(46, 38, 0, 0.7);
+  background-color: rgba(46, 38, 0, 0.06);
+}

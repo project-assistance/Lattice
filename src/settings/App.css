@@ -5,6 +5,7 @@
 }
 
 .settings-header h1 {
+  font-family: 'Fredoka', system-ui, sans-serif;
   font-size: 1.4rem;
   font-weight: 600;
   margin: 0 0 32px;
@@ -15,11 +16,12 @@
 }
 
 .settings-section h2 {
+  font-family: 'Fredoka', system-ui, sans-serif;
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(46, 38, 0, 0.4);
   margin: 0 0 12px;
 }
 
@@ -29,7 +31,7 @@
   justify-content: space-between;
   gap: 24px;
   padding: 14px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  border-bottom: 1px solid rgba(46, 38, 0, 0.07);
 }
 
 .setting-label {
@@ -44,14 +46,14 @@
 
 .setting-description {
   font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(46, 38, 0, 0.4);
 }
 
 .setting-input {
   width: 72px;
   padding: 6px 8px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(46, 38, 0, 0.04);
+  border: 1px solid rgba(46, 38, 0, 0.12);
   border-radius: 6px;
   color: inherit;
   font-size: 0.875rem;
@@ -61,21 +63,5 @@
 }
 
 .setting-input:focus {
-  border-color: rgba(100, 108, 255, 0.6);
-}
-
-@media (prefers-color-scheme: light) {
-  .settings-section h2 {
-    color: rgba(0, 0, 0, 0.4);
-  }
-  .setting-row {
-    border-color: rgba(0, 0, 0, 0.07);
-  }
-  .setting-description {
-    color: rgba(0, 0, 0, 0.4);
-  }
-  .setting-input {
-    background: rgba(0, 0, 0, 0.04);
-    border-color: rgba(0, 0, 0, 0.12);
-  }
+  border-color: rgba(245, 197, 24, 0.7);
 }

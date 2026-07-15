@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { Tab, ClusterCache, ClusterJob } from '@/types'
+import { Tab, ClusterCache, ClusterJob, ClusterProposal } from '@/types'
 import TabList, { ChromeGroupInfo } from '@/components/TabList'
 import GeminiGate from '@/components/GeminiGate'
+import ProposalBanner from '@/components/ProposalBanner'
 import { IconSidePanel, IconSettings } from '@/components/Icons'
 import './App.css'
 
@@ -27,6 +28,7 @@ export default function App() {
   const [chromeGroups, setChromeGroups] = useState<ChromeGroupInfo[]>([])
   const [loading, setLoading] = useState(true)
   const [clustering, setClustering] = useState(false)
+  const [proposal, setProposal] = useState<ClusterProposal | null>(null)
   const windowIdRef = useRef<number | null>(null)
 
   useEffect(() => {
@@ -35,12 +37,15 @@ export default function App() {
       const wid = win.id!
       windowIdRef.current = wid
 
-      const [jobResult, response] = await Promise.all([
+      const [jobResult, proposalResult, response] = await Promise.all([
         chrome.storage.local.get(`clusterJob_${wid}`),
+        chrome.storage.local.get(`clusterProposal_${wid}`),
         chrome.runtime.sendMessage({ action: 'GET_TABS', windowId: wid }),
       ])
 
       if ((jobResult[`clusterJob_${wid}`] as ClusterJob | undefined)?.status === 'running') setClustering(true)
+      const savedProposal = proposalResult[`clusterProposal_${wid}`] as ClusterProposal | undefined
+      if (savedProposal) setProposal(savedProposal)
 
       let clusters: Tab[][] = []
       if (response.status === 'cache_success') {
@@ -68,6 +73,10 @@ export default function App() {
       const jobChange = changes[`clusterJob_${wid}`]
       if ((jobChange?.newValue as ClusterJob | undefined)?.status === 'done') setClustering(false)
       if ((jobChange?.newValue as ClusterJob | undefined)?.status === 'error') setClustering(false)
+      const proposalChange = changes[`clusterProposal_${wid}`]
+      if (proposalChange !== undefined) {
+        setProposal(proposalChange.newValue as ClusterProposal | null ?? null)
+      }
     }
 
     init().catch(console.error)
@@ -141,6 +150,13 @@ export default function App() {
             </button>
           </div>
         </div>
+        {proposal && windowIdRef.current && (
+          <ProposalBanner
+            windowId={windowIdRef.current}
+            proposal={proposal}
+            onDismiss={() => setProposal(null)}
+          />
+        )}
         <TabList
           tabs={tabs}
           labels={labels}
