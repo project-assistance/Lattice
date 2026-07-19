@@ -43,3 +43,34 @@
   color: rgba(46, 38, 0, 0.85);
   border-color: rgba(46, 38, 0, 0.15);
 }
+
+.error-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  font-size: 0.76rem;
+  background-color: rgba(201, 48, 44, 0.08);
+  border-bottom: 1px solid rgba(201, 48, 44, 0.15);
+  color: #c0392b;
+}
+
+.error-strip span {
+  flex: 1;
+  min-width: 0;
+}
+
+.error-strip__close {
+  padding: 2px 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgba(201, 48, 44, 0.5);
+  font-size: 0.75rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.error-strip__close:hover {
+  color: #c0392b;
+}

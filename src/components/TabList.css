@@ -11,7 +11,12 @@
   background: rgba(245, 197, 24, 0.06);
   border: 1px solid rgba(46, 38, 0, 0.08);
   padding: 10px;
-  transition: border-color 0.2s, background-color 0.2s;
+  transition: border-color 0.2s, background-color 0.2s, box-shadow 0.15s;
+}
+
+/* Drop target highlight — ring instead of background so it works over any card color */
+.tab-group--drag-over {
+  box-shadow: 0 0 0 2px #52C9A8;
 }
 
 .tab-list {
@@ -34,6 +39,8 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  flex: 1;
+  min-width: 0;
 }
 
 .cluster-chrome-dot {
@@ -50,6 +57,60 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: rgba(46, 38, 0, 0.5);
+}
+
+.cluster-label--editable {
+  cursor: text;
+  border-radius: 3px;
+  padding: 1px 3px;
+  margin: -1px -3px;
+  transition: color 0.12s, background-color 0.12s;
+}
+
+.cluster-label--editable:hover {
+  color: rgba(46, 38, 0, 0.8);
+  background-color: rgba(46, 38, 0, 0.06);
+}
+
+.cluster-label-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.cluster-label-input {
+  font-family: 'Fredoka', system-ui, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(46, 38, 0, 0.85);
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid rgba(46, 38, 0, 0.3);
+  outline: none;
+  padding: 0 0 1px 0;
+  width: 100%;
+  min-width: 0;
+}
+
+.cluster-label-input:focus {
+  border-bottom-color: rgba(46, 38, 0, 0.65);
+}
+
+.cluster-label-input--error {
+  border-bottom-color: #d93025;
+  color: #d93025;
+}
+
+.cluster-label-error {
+  font-size: 0.62rem;
+  font-weight: 500;
+  color: #d93025;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .cluster-group-btn {
@@ -87,8 +148,14 @@
   border-radius: 999px;
   background-color: rgba(245, 197, 24, 0.08);
   border: 1px solid rgba(46, 38, 0, 0.08);
+  cursor: grab;
+  transition: background-color 0.1s, border-color 0.1s, opacity 0.15s;
+  user-select: none;
+}
+
+/* Non-draggable tabs (single group, no onMoveTab) keep pointer cursor */
+.tab-item:not([draggable]) {
   cursor: pointer;
-  transition: background-color 0.1s, border-color 0.1s;
 }
 
 .tab-item:hover {
@@ -103,6 +170,11 @@
 
 .tab-item--active .tab-domain {
   color: rgba(140, 100, 0, 0.75);
+}
+
+/* Source item fades while being dragged */
+.tab-item--dragging {
+  opacity: 0.35;
 }
 
 .tab-favicon-wrap {

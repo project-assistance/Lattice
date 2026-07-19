@@ -16,6 +16,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         offscreen: path.resolve(__dirname, 'src/offscreen/offscreen.html'),
+        welcome: path.resolve(__dirname, 'src/welcome/index.html'),
       },
     },
   },

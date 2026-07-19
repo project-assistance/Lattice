@@ -1,0 +1,214 @@
+.welcome {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  box-sizing: border-box;
+}
+
+.welcome-card {
+  background: #fff;
+  border: 1px solid rgba(46, 38, 0, 0.08);
+  border-radius: 20px;
+  padding: 48px 52px;
+  max-width: 560px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 4px 24px rgba(46, 38, 0, 0.06);
+}
+
+.welcome-logo-wrap {
+  margin-bottom: 20px;
+}
+
+.welcome-logo {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+}
+
+.welcome-title {
+  font-family: 'Fredoka', system-ui, sans-serif;
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 0 0 10px;
+  color: #2E2600;
+}
+
+.welcome-subtitle {
+  font-size: 0.95rem;
+  color: rgba(46, 38, 0, 0.6);
+  margin: 0 0 36px;
+  line-height: 1.6;
+}
+
+.welcome-pin-section {
+  background: #FFFEF5;
+  border: 1px solid rgba(46, 38, 0, 0.08);
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.welcome-section-title {
+  font-family: 'Fredoka', system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 6px;
+  color: #2E2600;
+}
+
+.welcome-section-desc {
+  font-size: 0.82rem;
+  color: rgba(46, 38, 0, 0.55);
+  margin: 0 0 20px;
+}
+
+/* Pin visual */
+.pin-visual {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 8px;
+}
+
+.pin-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.pin-step-label {
+  font-size: 0.72rem;
+  color: rgba(46, 38, 0, 0.45);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.pin-arrow {
+  font-size: 1.1rem;
+  color: rgba(46, 38, 0, 0.25);
+  margin-top: 14px;
+}
+
+/* Mock Chrome toolbar */
+.mock-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: #f1f3f4;
+  border-radius: 6px;
+  padding: 4px 6px;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+
+.mock-toolbar-spacer {
+  width: 36px;
+  height: 14px;
+  background: rgba(0,0,0,0.07);
+  border-radius: 3px;
+}
+
+.mock-toolbar-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5f6368;
+}
+
+.mock-toolbar-btn--ext {
+  background: rgba(82, 201, 168, 0.12);
+}
+
+.mock-toolbar-btn--puzzle {
+  cursor: default;
+}
+
+/* Mock extensions dropdown */
+.mock-dropdown {
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.12);
+  border-radius: 8px;
+  padding: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  min-width: 140px;
+}
+
+.mock-dropdown-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 5px;
+}
+
+.mock-dropdown-row--highlight {
+  background: rgba(82, 201, 168, 0.1);
+}
+
+.mock-ext-icon {
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.mock-ext-name {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #2E2600;
+  flex: 1;
+}
+
+.mock-pin-icon {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+/* Tip */
+.welcome-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(82, 201, 168, 0.08);
+  border: 1px solid rgba(82, 201, 168, 0.25);
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: 0.82rem;
+  color: rgba(46, 38, 0, 0.65);
+  text-align: left;
+  margin-bottom: 28px;
+  line-height: 1.5;
+}
+
+.welcome-tip-label {
+  font-family: 'Fredoka', system-ui, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #52C9A8;
+  white-space: nowrap;
+  padding-top: 1px;
+}
+
+/* CTA button */
+.welcome-btn {
+  font-family: 'Fredoka', system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  background: #52C9A8;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 32px;
+  cursor: pointer;
+  transition: background 0.15s;
+  letter-spacing: 0.01em;
+}
+.welcome-btn:hover { background: #3db896; }

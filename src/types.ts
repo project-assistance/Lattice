@@ -21,6 +21,8 @@ export type ClusterCache = {
   clusters: Tab[][]
   labels: string[]
   centroids?: number[][]
+  groupIds?: (number | null)[]
+  stale?: boolean
 }
 
 export type ClusterProposal = {
@@ -33,6 +35,7 @@ export type ClusterProposal = {
 export type ClusterJob = {
   status: 'running' | 'done' | 'error'
   error?: string
+  startedAt?: number
 }
 
 export type EnrichedTabs = EnrichedTab[]

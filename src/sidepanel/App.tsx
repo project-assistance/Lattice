@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Tab, ClusterCache, ClusterJob, ClusterProposal } from '@/types'
 import TabList, { ChromeGroupInfo } from '@/components/TabList'
-import GeminiGate from '@/components/GeminiGate'
 import ProposalBanner from '@/components/ProposalBanner'
 import { IconSettings } from '@/components/Icons'
 import './App.css'
@@ -28,6 +27,7 @@ export default function App() {
   const [chromeGroups, setChromeGroups] = useState<ChromeGroupInfo[]>([])
   const [loading, setLoading] = useState(true)
   const [clustering, setClustering] = useState(false)
+  const [clusterError, setClusterError] = useState<string | null>(null)
   const [proposal, setProposal] = useState<ClusterProposal | null>(null)
   const windowIdRef = useRef<number | null>(null)
 
@@ -43,7 +43,19 @@ export default function App() {
         chrome.runtime.sendMessage({ action: 'GET_TABS', windowId: wid }),
       ])
 
-      if ((jobResult[`clusterJob_${wid}`] as ClusterJob | undefined)?.status === 'running') setClustering(true)
+      const job = jobResult[`clusterJob_${wid}`] as ClusterJob | undefined
+      if (job?.status === 'running') {
+        const startedAt = (job as any).startedAt as number | undefined
+        if (startedAt && Date.now() - startedAt > 5 * 60 * 1000) {
+          chrome.storage.local.set({ [`clusterJob_${wid}`]: { status: 'error', error: 'Organizing timed out.' } as ClusterJob })
+          setClusterError('Organizing timed out. Please try again.')
+        } else {
+          setClustering(true)
+        }
+      } else if (job?.status === 'error') {
+        setClusterError(job.error ?? 'Clustering failed. Please try again.')
+      }
+
       const savedProposal = proposalResult[`clusterProposal_${wid}`] as ClusterProposal | undefined
       if (savedProposal) setProposal(savedProposal)
 
@@ -71,8 +83,14 @@ export default function App() {
         setChromeGroups(await computeGroupInfo(cache.clusters, wid))
       }
       const jobChange = changes[`clusterJob_${wid}`]
-      if ((jobChange?.newValue as ClusterJob | undefined)?.status === 'done') setClustering(false)
-      if ((jobChange?.newValue as ClusterJob | undefined)?.status === 'error') setClustering(false)
+      if ((jobChange?.newValue as ClusterJob | undefined)?.status === 'done') {
+        setClustering(false)
+        setClusterError(null)
+      }
+      if ((jobChange?.newValue as ClusterJob | undefined)?.status === 'error') {
+        setClustering(false)
+        setClusterError((jobChange.newValue as ClusterJob).error ?? 'Clustering failed. Please try again.')
+      }
       const proposalChange = changes[`clusterProposal_${wid}`]
       if (proposalChange !== undefined) {
         setProposal(proposalChange.newValue as ClusterProposal | null ?? null)
@@ -86,18 +104,24 @@ export default function App() {
 
   const handleClusterTabs = () => {
     setClustering(true)
+    setClusterError(null)
     chrome.windows.getCurrent()
       .then(win => chrome.runtime.sendMessage({ action: 'CLUSTER_TABS', windowId: win.id }))
       .then(async response => {
-        if (response.status === 'success') {
+        if (response?.status === 'error') {
+          setClusterError(response.message ?? 'Clustering failed. Please try again.')
+          setClustering(false)
+        } else if (response?.status === 'success') {
           setTabs(response.clusters)
           setLabels(response.labels ?? [])
           const wid = windowIdRef.current
           if (wid) setChromeGroups(await computeGroupInfo(response.clusters, wid))
         }
       })
-      .catch(console.error)
-      .finally(() => setClustering(false))
+      .catch(err => {
+        setClusterError(err?.message ?? 'Clustering failed. Please try again.')
+        setClustering(false)
+      })
   }
 
   const handleTabClick = (tab: Tab) => {
@@ -114,50 +138,81 @@ export default function App() {
       tabIds: group.map(t => t.id),
       title: label,
       colorIndex: index,
+      clusterIdx: index,
       windowId: windowIdRef.current,
     })
     const wid = windowIdRef.current
     if (wid) setChromeGroups(await computeGroupInfo(tabs, wid))
   }
 
-  const handleUngroupCluster = async (group: Tab[], _groupId: number) => {
-    await chrome.runtime.sendMessage({ action: 'UNGROUP_TABS', tabIds: group.map(t => t.id) })
+  const handleUngroupCluster = async (group: Tab[], _groupId: number, clusterIdx: number) => {
+    await chrome.runtime.sendMessage({
+      action: 'UNGROUP_TABS',
+      tabIds: group.map(t => t.id),
+      clusterIdx,
+      windowId: windowIdRef.current,
+    })
     const wid = windowIdRef.current
     if (wid) setChromeGroups(await computeGroupInfo(tabs, wid))
   }
 
+  const handleMoveTab = (tabId: number, fromIdx: number, toIdx: number) => {
+    chrome.runtime.sendMessage({
+      action: 'MOVE_TAB',
+      tabId,
+      fromClusterIdx: fromIdx,
+      toClusterIdx: toIdx,
+      windowId: windowIdRef.current,
+    })
+  }
+
+  const handleRenameCluster = (clusterIdx: number, newLabel: string) => {
+    chrome.runtime.sendMessage({
+      action: 'RENAME_CLUSTER',
+      clusterIdx,
+      newLabel,
+      windowId: windowIdRef.current,
+    })
+  }
+
   return (
-    <GeminiGate className="panel">
-      <div className="panel">
-        <div className="toolbar">
-          <span className="tab-count">{tabs.flat().length} tabs</span>
-          <div className="toolbar-actions">
-            <button onClick={handleClusterTabs} disabled={tabs.flat().length < 2 || clustering}>
-              {clustering ? 'Tidying…' : 'Tidy Up'}
-            </button>
-            <button className="icon-btn" onClick={() => chrome.runtime.openOptionsPage()} title="Settings">
-              <IconSettings />
-            </button>
-          </div>
+    <div className="panel">
+      <div className="toolbar">
+        <span className="tab-count">{tabs.flat().length} tabs</span>
+        <div className="toolbar-actions">
+          <button onClick={handleClusterTabs} disabled={tabs.flat().length < 2 || clustering}>
+            {clustering ? 'Organizing…' : 'Organize'}
+          </button>
+          <button className="icon-btn" onClick={() => chrome.runtime.openOptionsPage()} title="Settings">
+            <IconSettings />
+          </button>
         </div>
-        {proposal && windowIdRef.current && (
-          <ProposalBanner
-            windowId={windowIdRef.current}
-            proposal={proposal}
-            onDismiss={() => setProposal(null)}
-          />
-        )}
-        <TabList
-          tabs={tabs}
-          labels={labels}
-          chromeGroups={chromeGroups}
-          loading={loading}
-          onTabClick={handleTabClick}
-          onTabClose={handleTabClose}
-          onGroupCluster={handleGroupCluster}
-          onUngroupCluster={handleUngroupCluster}
-        />
       </div>
-    </GeminiGate>
+      {clusterError && (
+        <div className="error-strip">
+          <span>{clusterError}</span>
+          <button className="error-strip__close" onClick={() => setClusterError(null)} title="Dismiss">✕</button>
+        </div>
+      )}
+      {proposal && windowIdRef.current && (
+        <ProposalBanner
+          windowId={windowIdRef.current}
+          proposal={proposal}
+          onDismiss={() => setProposal(null)}
+        />
+      )}
+      <TabList
+        tabs={tabs}
+        labels={labels}
+        chromeGroups={chromeGroups}
+        loading={loading}
+        onTabClick={handleTabClick}
+        onTabClose={handleTabClose}
+        onGroupCluster={handleGroupCluster}
+        onUngroupCluster={handleUngroupCluster}
+        onMoveTab={handleMoveTab}
+        onRenameCluster={handleRenameCluster}
+      />
+    </div>
   )
 }

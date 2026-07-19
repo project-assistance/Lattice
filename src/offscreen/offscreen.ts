@@ -50,13 +50,33 @@ async function generateLabels(
     clusterIndices: number[][],
     embedder: any,
     tabs: EnrichedTabs,
-    vectors: number[][]
+    vectors: number[][],
+    useAi: boolean
 ): Promise<string[]> {
+    if (!useAi) {
+        return Promise.all(clusterIndices.map(g => keyBERTLabel(g, embedder, tabs, vectors)))
+    }
+
+    // Check availability before calling create() — avoids hanging when the model
+    // is disabled ('no') or still downloading ('downloading'), where create() blocks
+    // indefinitely rather than throwing. Only proceed when the model is ready.
+    if (typeof LanguageModel === 'undefined') {
+        return Promise.all(clusterIndices.map(g => keyBERTLabel(g, embedder, tabs, vectors)))
+    }
+    try {
+        const avail: string = await LanguageModel.availability()
+        if (avail !== 'available') {
+            return Promise.all(clusterIndices.map(g => keyBERTLabel(g, embedder, tabs, vectors)))
+        }
+    } catch {
+        return Promise.all(clusterIndices.map(g => keyBERTLabel(g, embedder, tabs, vectors)))
+    }
+
     let session: any = null
     try {
         session = await LanguageModel.create()
     } catch {
-        // Gemini unavailable — use KeyBERT for all clusters
+        // create() failed despite availability check — fall back to KeyBERT
         return Promise.all(clusterIndices.map(g => keyBERTLabel(g, embedder, tabs, vectors)))
     }
 
@@ -80,14 +100,14 @@ async function generateLabels(
     return labels
 }
 
-async function runTabCompare(tabs: EnrichedTabs, sendResponse: (response: any) => void) {
+async function runTabCompare(tabs: EnrichedTabs, threshold: number, useAi: boolean, sendResponse: (response: any) => void) {
     try {
         const embedder = await pipeline(model.task, model.id, { device: model.device, dtype: model.dtype });
         const inputs = tabs.map(t => formatTabInput(t.url, t.title, t.signal, t.category));
         console.log('Embedding inputs:', inputs);
         const output = await embedder(inputs, { pooling: 'mean', normalize: true });
         const vectors: number[][] = output.tolist();
-        const clusterIndices = agglomerativeCluster(vectors);
+        const clusterIndices = agglomerativeCluster(vectors, threshold);
         const clusteredTabs = mapClustersToItems(tabs, clusterIndices);
 
         // Split: multi-tab clusters get named, singletons are collected into one ungrouped bucket
@@ -96,7 +116,7 @@ async function runTabCompare(tabs: EnrichedTabs, sendResponse: (response: any) =
         const singleTabs = clusteredTabs.filter(c => c.length === 1).flat();
         const singletonIndices = clusterIndices.filter((_, i) => clusteredTabs[i].length === 1).flat();
 
-        const multiLabels = await generateLabels(multiClusters, multiIndices, embedder, tabs, vectors);
+        const multiLabels = await generateLabels(multiClusters, multiIndices, embedder, tabs, vectors, useAi);
 
         const finalClusters = singleTabs.length > 0 ? [...multiClusters, singleTabs] : multiClusters;
         const finalLabels = singleTabs.length > 0 ? [...multiLabels, 'Ungrouped'] : multiLabels;
@@ -119,7 +139,7 @@ async function runTabCompare(tabs: EnrichedTabs, sendResponse: (response: any) =
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (message.action === 'RUN_EMBEDDINGS') {
         console.log('Received tabs for comparison:', message.tabs);
-        runTabCompare(message.tabs, sendResponse);
+        runTabCompare(message.tabs, message.threshold, message.useAi === true, sendResponse);
         return true;
     }
 
