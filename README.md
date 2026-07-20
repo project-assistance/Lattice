@@ -4,7 +4,7 @@
 
 **Lattice organizes your Chrome tabs into meaningful groups, automatically.**
 
-![Lattice before and after: a chaotic tab bar transformed into organized, named clusters](screenshots/hero-before-after.png)
+<img src="screenshots/hero-before-after.png" alt="Lattice before and after: a chaotic tab bar transformed into organized, named clusters" width="800">
 
 If you keep Chrome open for days at a time and regularly have 50, 80, or 150+ tabs, Lattice watches them in the background, works out which ones are related, and groups them under a short descriptive name — no folders to maintain, no workspaces to build, no manual sorting.
 
@@ -27,16 +27,16 @@ You can optionally pin any group to Chrome's native tab bar, drag tabs between g
 ## Screenshots
 
 **Organized clusters in the popup**
-![Lattice popup showing several named tab clusters](screenshots/popup-clusters.png)
+<img src="screenshots/popup-clusters.png" alt="Lattice popup showing several named tab clusters" width="450">
 
 **Pin to Chrome — publish a cluster as a native tab group**
-![A Chrome tab bar with colored native tab groups created by Lattice](screenshots/pin-to-chrome.png)
+<img src="screenshots/pin-to-chrome.png" alt="A Chrome tab bar with colored native tab groups created by Lattice" width="600">
 
 **Drag-and-drop and inline rename**
-![Dragging a tab between clusters and renaming a cluster label inline](screenshots/drag-and-drop.gif)
+<img src="screenshots/drag-and-drop.gif" alt="Dragging a tab between clusters and renaming a cluster label inline" width="450">
 
 **Settings — sensitivity, AI labeling, and background behavior**
-![Lattice settings page showing clustering sensitivity presets and the AI labeling toggle](screenshots/settings.png)
+<img src="screenshots/settings.png" alt="Lattice settings page showing clustering sensitivity presets and the AI labeling toggle" width="450">
 
 ## Features
 
