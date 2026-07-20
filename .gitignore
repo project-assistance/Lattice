@@ -13,6 +13,10 @@ release
 dist-ssr
 *.local
 
+# Local-only docs (kept out of the repo, README.md is the only public one)
+*.md
+!README.md
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
