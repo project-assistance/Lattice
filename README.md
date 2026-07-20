@@ -30,7 +30,7 @@ You can optionally pin any group to Chrome's native tab bar, drag tabs between g
 <img src="screenshots/popup-clusters.png" alt="Lattice popup showing several named tab clusters" width="450">
 
 **Pin to Chrome — publish a cluster as a native tab group**
-<img src="screenshots/pin-to-chrome.png" alt="A Chrome tab bar with colored native tab groups created by Lattice" width="600">
+<img src="screenshots/pin-to-chrome.png" alt="A Chrome tab bar with colored native tab groups created by Lattice" width="450">
 
 **Drag-and-drop and inline rename**
 <img src="screenshots/drag-and-drop.gif" alt="Dragging a tab between clusters and renaming a cluster label inline" width="450">
