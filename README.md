@@ -1,10 +1,20 @@
 # Lattice
 
+![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)
+
 **Lattice organizes your Chrome tabs into meaningful groups, automatically.**
+
+![Lattice before and after: a chaotic tab bar transformed into organized, named clusters](screenshots/hero-before-after.png)
 
 If you keep Chrome open for days at a time and regularly have 50, 80, or 150+ tabs, Lattice watches them in the background, works out which ones are related, and groups them under a short descriptive name — no folders to maintain, no workspaces to build, no manual sorting.
 
 Everything runs on your device. Your tabs, titles, and URLs never leave your computer — there's no server, no account, and no telemetry.
+
+## Why Lattice
+
+Somewhere around 30–40 tabs, favicons blur together and you can't tell which is which. Beyond 80, you're guessing. You know the tab you want is open somewhere — you just can't find it. Every existing "solution" makes you do more work: bookmarks require organizing, tab groups require naming, session managers require saving.
+
+Lattice's promise is different: the tabs organize themselves, based on what they actually are.
 
 ## How it works
 
@@ -13,6 +23,20 @@ Everything runs on your device. Your tabs, titles, and URLs never leave your com
 3. New tabs get placed into the right group automatically as you open them. If a group starts to drift, Lattice proposes a better organization — you decide whether to apply it.
 
 You can optionally pin any group to Chrome's native tab bar, drag tabs between groups, rename groups inline, and close tabs — all from the popup or side panel.
+
+## Screenshots
+
+**Organized clusters in the popup**
+![Lattice popup showing several named tab clusters](screenshots/popup-clusters.png)
+
+**Pin to Chrome — publish a cluster as a native tab group**
+![A Chrome tab bar with colored native tab groups created by Lattice](screenshots/pin-to-chrome.png)
+
+**Drag-and-drop and inline rename**
+![Dragging a tab between clusters and renaming a cluster label inline](screenshots/drag-and-drop.gif)
+
+**Settings — sensitivity, AI labeling, and background behavior**
+![Lattice settings page showing clustering sensitivity presets and the AI labeling toggle](screenshots/settings.png)
 
 ## Features
 
@@ -24,6 +48,13 @@ You can optionally pin any group to Chrome's native tab bar, drag tabs between g
 - Drag-and-drop tab movement between groups, with inline rename
 - Adjustable clustering sensitivity and re-cluster interval
 - Full side panel view for large tab sets, plus a diagnostics panel for power users
+
+## How Lattice differs
+
+- **OneTab** is about closing tabs to save memory; Lattice is about organizing them while they're open.
+- **Toby / Workona** require you to build and maintain a workspace structure. Lattice figures out the structure automatically.
+- **Session managers** save snapshots. Lattice maintains a live organization.
+- **Arc's spaces** require switching browsers. Lattice works in the Chrome you already use.
 
 ## Privacy
 
@@ -61,6 +92,23 @@ Lattice's icon will appear in the toolbar. Click it to open the popup, or use th
 7. **Let it maintain itself.** New tabs you open are automatically placed into the right existing group. Every so often, Lattice quietly re-checks your tabs in the background and — only if it finds a meaningfully better organization — shows a banner proposing the change. Nothing is rearranged without your approval.
 8. **Tune it in Settings** (gear icon in the popup): clustering sensitivity (looser vs. tighter groups), how often background re-clustering runs, whether new tabs get smart-placed automatically, whether background proposals are shown, and whether group names use on-device AI or plain keyword extraction.
 
+## FAQ
+
+**Does Lattice send my browsing data anywhere?**
+No. Everything runs on your device. Lattice doesn't have a server, doesn't have an account system, and doesn't include any tracking.
+
+**Why does Lattice need the Gemini Nano AI model? Do I have to download it?**
+The optional AI feature that names your clusters uses Chrome's built-in Gemini Nano, which Chrome downloads itself on qualifying hardware. Lattice doesn't require it — if Nano isn't available, Lattice uses a small keyword extractor to name groups instead. You can also turn AI naming off entirely in Settings.
+
+**What permissions does Lattice request, and why?**
+See the [Permissions](#permissions) table below. Lattice does not request `<all_urls>` and does not read the contents of pages you visit.
+
+**Will this work with Firefox / Safari / Edge?**
+Not yet. Lattice is Chrome-first because it relies on Chrome's tab group and built-in AI APIs.
+
+**Is this free?**
+Yes. No account, no signup, no catch.
+
 ## Development
 
 ```bash
@@ -72,6 +120,10 @@ npm run test:watch   # Re-run tests on file change
 ```
 
 After `npm run dev`, load `dist/` as an unpacked extension as described above. Popup and side panel changes hot-reload automatically; `background.ts` changes require clicking refresh on `chrome://extensions/`.
+
+## Contributing
+
+Issues and pull requests are welcome. If you're planning a larger change, open an issue first to discuss the approach.
 
 ## Permissions
 
