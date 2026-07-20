@@ -26,16 +26,16 @@ You can optionally pin any group to Chrome's native tab bar, drag tabs between g
 
 ## Screenshots
 
-**Organized clusters in the popup**
+### Organized clusters in the popup
 <img src="screenshots/popup-clusters.png" alt="Lattice popup showing several named tab clusters" width="450">
 
-**Pin to Chrome — publish a cluster as a native tab group**
+### Pin to Chrome — publish a cluster as a native tab group
 <img src="screenshots/pin-to-chrome.png" alt="A Chrome tab bar with colored native tab groups created by Lattice" width="450">
 
-**Drag-and-drop and inline rename**
+### Drag-and-drop and inline rename
 <img src="screenshots/drag-and-drop.gif" alt="Dragging a tab between clusters and renaming a cluster label inline" width="450">
 
-**Settings — sensitivity, AI labeling, and background behavior**
+### Settings — sensitivity, AI labeling, and background behavior
 <img src="screenshots/settings.png" alt="Lattice settings page showing clustering sensitivity presets and the AI labeling toggle" width="450">
 
 ## Features
