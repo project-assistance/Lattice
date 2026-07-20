@@ -50,6 +50,17 @@ Then load the built extension into Chrome:
 
 Lattice's icon will appear in the toolbar. Click it to open the popup, or use the "Open in side panel" button for a larger view.
 
+## Using Lattice
+
+1. **Open Lattice.** Click its toolbar icon for the popup, or use the "Open in side panel" button inside the popup for a larger view alongside your tabs.
+2. **Click Organize.** Lattice clusters your currently open tabs into named groups. This takes a few seconds the first time (the local model has to load).
+3. **Review the groups.** Each cluster shows its tabs under a short auto-generated label. Anything that doesn't fit a clear group lands in **Ungrouped**.
+4. **Pin a group to Chrome (optional).** Click **Pin to Chrome** on any named group to publish it as a native Chrome tab group with a colored header in your tab bar. **Unpin** removes it from the tab bar without closing the tabs.
+5. **Rename a group.** Click its label, type a new name, press Enter. If the group is pinned, Chrome's tab group title updates too.
+6. **Move a tab between groups.** Drag any tab card onto another group to move it there.
+7. **Let it maintain itself.** New tabs you open are automatically placed into the right existing group. Every so often, Lattice quietly re-checks your tabs in the background and — only if it finds a meaningfully better organization — shows a banner proposing the change. Nothing is rearranged without your approval.
+8. **Tune it in Settings** (gear icon in the popup): clustering sensitivity (looser vs. tighter groups), how often background re-clustering runs, whether new tabs get smart-placed automatically, whether background proposals are shown, and whether group names use on-device AI or plain keyword extraction.
+
 ## Development
 
 ```bash
@@ -60,7 +71,7 @@ npm test             # Run the test suite once
 npm run test:watch   # Re-run tests on file change
 ```
 
-After `npm run dev`, load `dist/` as an unpacked extension as described above. Popup and side panel changes hot-reload automatically; `background.ts` changes require clicking refresh on `chrome://extensions/`. See [ARCHITECTURE.md](ARCHITECTURE.md) for the full technical breakdown of how the extension is put together — background service worker, offscreen ML pipeline, storage model, and message API.
+After `npm run dev`, load `dist/` as an unpacked extension as described above. Popup and side panel changes hot-reload automatically; `background.ts` changes require clicking refresh on `chrome://extensions/`.
 
 ## Permissions
 
