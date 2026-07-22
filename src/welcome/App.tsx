@@ -65,6 +65,17 @@ export default function App() {
           Lattice automatically organizes your open tabs into smart groups using on-device AI.
         </p>
 
+        <div className="welcome-preview">
+          <img
+            src="/welcome-preview.png"
+            alt="Lattice popup showing tabs organized into named clusters"
+            className="welcome-preview-img"
+          />
+          <p className="welcome-preview-caption">
+            This is what Organize does — tabs grouped by what they're actually about.
+          </p>
+        </div>
+
         <div className="welcome-pin-section">
           <h2 className="welcome-section-title">Pin Lattice to your toolbar</h2>
           <p className="welcome-section-desc">
@@ -81,6 +92,15 @@ export default function App() {
         <button className="welcome-btn" onClick={() => window.close()}>
           Got it — let's go
         </button>
+
+        <a
+          className="welcome-footer-link"
+          href="https://github.com/project-assistance/TidyTabs"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          View source on GitHub
+        </a>
       </div>
     </div>
   )

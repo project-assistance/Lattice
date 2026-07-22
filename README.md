@@ -60,6 +60,22 @@ You can optionally pin any group to Chrome's native tab bar, drag tabs between g
 
 Lattice runs entirely on your device. The ML model that clusters your tabs ([Xenova/all-MiniLM-L12-v2](https://huggingface.co/Xenova/all-MiniLM-L12-v2)) and the keyword-based label fallback both run locally in the browser via Transformers.js. Cluster state is stored only in `chrome.storage.local`. There are no accounts, no servers, no analytics, and no tracking. Lattice does not request the `<all_urls>` permission and never reads page contents — only tab titles and URLs.
 
+### Privacy Policy
+
+**Data collected:** None. Lattice does not collect, log, or transmit any personal data, browsing history, or usage analytics.
+
+**Data transmitted:** None. Lattice has no server and makes no network requests with your data. All processing — embedding, clustering, and cluster naming — happens locally in your browser.
+
+**Data stored:** Cluster state (tab titles, URLs, group names, and embeddings) is stored only in `chrome.storage.local`, on your device. It is cleared when you uninstall the extension.
+
+**Third parties:** None. Lattice includes no analytics libraries, error-reporting services, or A/B testing frameworks.
+
+**On-device AI:** Optional cluster naming uses Chrome's built-in Gemini Nano (the Prompt API), which Chrome downloads and manages itself on qualifying hardware — not Lattice. If it's unavailable or disabled, Lattice falls back to local keyword extraction. Both paths run entirely on-device.
+
+**Contact:** orcasitas.jr@gmail.com
+
+**Effective date:** July 22, 2026
+
 ## Installation
 
 Lattice isn't yet published to the Chrome Web Store — install it from source:

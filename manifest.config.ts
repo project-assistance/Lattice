@@ -3,10 +3,13 @@ import pkg from './package.json'
 
 export default defineManifest({
   manifest_version: 3,
-  name: pkg.name,
+  name: 'Lattice',
   version: pkg.version,
   icons: {
+    16: 'public/logo.png',
+    32: 'public/logo.png',
     48: 'public/logo.png',
+    128: 'public/logo.png',
   },
   background: {
     service_worker: 'src/background/background.ts',
@@ -14,6 +17,8 @@ export default defineManifest({
   },
   action: {
     default_icon: {
+      16: 'public/logo.png',
+      32: 'public/logo.png',
       48: 'public/logo.png',
     },
     default_popup: 'src/popup/index.html',
@@ -25,7 +30,7 @@ export default defineManifest({
     'storage',
     'alarms',
     'sidePanel',
-    'aiAssistant',
+    'languageModel',
     'tabGroups',
   ],
 
